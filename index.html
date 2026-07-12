@@ -439,6 +439,228 @@
     h1{ font-size:23px; }
     .badge{ width:64px; height:64px; font-size:9px; top:-12px; right:-8px; }
   }
+
+  /* ---------- PAGE NAV ---------- */
+  .page-nav{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .page-nav-btn{
+    flex:1;
+    text-align:center;
+    background:var(--surface);
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    padding:10px 6px;
+    font-family:var(--font-display);
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    user-select:none;
+  }
+  .page-nav-btn:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .page-nav-btn.active{
+    background:var(--purple);
+    color:#fff;
+    transform:translate(-2px,-2px);
+    box-shadow:5px 5px 0 var(--ink);
+  }
+
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ---------- CHART PAGE ---------- */
+  .chart-card{
+    background:var(--surface);
+    border:3px solid var(--ink);
+    box-shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+    border-radius:16px;
+    padding:18px 16px 14px;
+    margin-bottom:18px;
+  }
+  .chart-title{
+    font-family:var(--font-display);
+    font-size:14px;
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .chart-sub{
+    font-size:12.5px;
+    font-weight:600;
+    color:#4b4b4b;
+    margin:0 0 16px;
+  }
+  .chart-bars{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    height:170px;
+    border-bottom:2.5px solid var(--ink);
+    padding-bottom:0;
+  }
+  .chart-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    height:100%;
+    gap:6px;
+  }
+  .chart-col-pct{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:10.5px;
+    background:var(--yellow);
+    border:2px solid var(--ink);
+    border-radius:5px;
+    padding:1px 4px;
+    white-space:nowrap;
+  }
+  .chart-bar{
+    width:100%;
+    max-width:34px;
+    background:var(--mint);
+    border:2.5px solid var(--ink);
+    border-radius:6px 6px 0 0;
+    min-height:4px;
+    transition:height .3s ease;
+  }
+  .chart-bar.today{ background:var(--pink); }
+  .chart-bar.empty{ background:repeating-linear-gradient(45deg,#f3f3f3,#f3f3f3 5px,#e9e9e9 5px,#e9e9e9 10px); }
+  .chart-labels{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .chart-col-label{
+    flex:1;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:11.5px;
+  }
+  .chart-col-label.today{ color:var(--pink); }
+  .chart-legend{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    color:#4b4b4b;
+  }
+  .legend-swatch{
+    width:12px;
+    height:12px;
+    border:2px solid var(--ink);
+    border-radius:3px;
+  }
+  .chart-stats{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .stat-card{
+    flex:1;
+    background:var(--surface);
+    border:3px solid var(--ink);
+    border-radius:14px;
+    padding:12px 10px;
+    text-align:center;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .stat-num{
+    font-family:var(--font-display);
+    font-size:22px;
+    line-height:1;
+    margin-bottom:4px;
+  }
+  .stat-label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    font-weight:700;
+    color:#4b4b4b;
+    text-transform:uppercase;
+  }
+
+  /* ---------- WEEK NAV ---------- */
+  .week-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .week-nav-btn{
+    flex-shrink:0;
+    width:32px;
+    height:32px;
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    background:var(--yellow);
+    font-family:var(--font-display);
+    font-size:13px;
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease, opacity .1s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .week-nav-btn:hover:not(:disabled){ transform:translate(-1px,-1px); box-shadow:3.5px 3.5px 0 var(--ink); }
+  .week-nav-btn:disabled{ opacity:.35; cursor:not-allowed; }
+  .week-nav-label{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12.5px;
+    background:var(--surface);
+    border:2px solid var(--ink);
+    border-radius:8px;
+    padding:5px 12px;
+    text-align:center;
+    min-width:150px;
+  }
+
+  /* ---------- READ-ONLY BANNER ---------- */
+  .readonly-banner{
+    background:var(--yellow);
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:14px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    text-align:center;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .readonly-back-btn{
+    display:block;
+    margin:8px auto 0;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:700;
+    border:2px solid var(--ink);
+    border-radius:7px;
+    padding:5px 10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  .readonly-back-btn:hover{ background:var(--pink); color:#fff; }
+
+  .task.readonly .check{ cursor:default; opacity:.7; }
 </style>
 </head>
 <body>
@@ -451,40 +673,92 @@
       <span class="today-pill" id="todayPill">--</span>
     </div>
 
-    <div class="day-tabs" id="dayTabs"></div>
+    <div class="page-nav">
+      <div class="page-nav-btn active" id="navJadwal">📅 Jadwal</div>
+      <div class="page-nav-btn" id="navGrafik">📊 Grafik</div>
+    </div>
 
-    <div class="progress-card">
-      <div class="progress-top">
-        <span class="progress-label">Progres hari ini</span>
-        <span class="progress-count" id="progressCount">0/0</span>
+    <div class="page active" id="pageJadwal">
+      <div class="week-nav">
+        <button class="week-nav-btn" id="prevWeekBtnJadwal">◀</button>
+        <span class="week-nav-label" id="weekNavLabelJadwal">--</span>
+        <button class="week-nav-btn" id="nextWeekBtnJadwal">▶</button>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+
+      <div class="readonly-banner" id="readonlyBanner" style="display:none;">
+        📖 Melihat minggu lalu — centang &amp; edit dikunci
+        <button class="readonly-back-btn" id="readonlyBackBtn">Kembali ke minggu ini</button>
+      </div>
+
+      <div class="day-tabs" id="dayTabs"></div>
+
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="progress-label">Progres hari ini</span>
+          <span class="progress-count" id="progressCount">0/0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="add-card" id="addCard">
+        <p class="add-title">+ Tambah kegiatan</p>
+        <div class="add-row">
+          <input type="time" id="timeInput" value="08:00">
+          <input type="text" id="textInput" placeholder="Nama kegiatan...">
+        </div>
+        <button class="btn" id="addBtn">Tambah ke jadwal</button>
+      </div>
+
+      <div class="list-header">
+        <p class="list-title" id="listTitle">Kegiatan</p>
+        <button class="copy-btn" id="copyBtn">📋 Salin ke hari lain</button>
+      </div>
+
+      <div class="copy-panel" id="copyPanel" style="display:none;">
+        <p class="copy-panel-label">Pilih hari tujuan:</p>
+        <div class="copy-days" id="copyDays"></div>
+      </div>
+
+      <div id="taskList"></div>
+
+      <button class="clear-link" id="clearBtn" style="display:none;">hapus semua kegiatan hari ini</button>
+    </div>
+
+    <div class="page" id="pageGrafik">
+      <div class="chart-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-label">Total kegiatan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statDone">0</div>
+          <div class="stat-label">Selesai</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statAvg">0%</div>
+          <div class="stat-label">Rata-rata</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="week-nav">
+          <button class="week-nav-btn" id="prevWeekBtn">◀</button>
+          <span class="week-nav-label" id="weekNavLabel">--</span>
+          <button class="week-nav-btn" id="nextWeekBtn">▶</button>
+        </div>
+        <p class="chart-title">Progres mingguan</p>
+        <p class="chart-sub">Persentase kegiatan selesai per hari</p>
+        <div class="chart-bars" id="chartBars"></div>
+        <div class="chart-labels" id="chartLabels"></div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--mint);"></span>Hari lain</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--pink);"></span>Hari ini</div>
+          <div class="legend-item"><span class="legend-swatch chart-bar empty" style="width:12px;height:12px;border-radius:3px;"></span>Belum ada data</div>
+        </div>
       </div>
     </div>
-
-    <div class="add-card">
-      <p class="add-title">+ Tambah kegiatan</p>
-      <div class="add-row">
-        <input type="time" id="timeInput" value="08:00">
-        <input type="text" id="textInput" placeholder="Nama kegiatan...">
-      </div>
-      <button class="btn" id="addBtn">Tambah ke jadwal</button>
-    </div>
-
-    <div class="list-header">
-      <p class="list-title" id="listTitle">Kegiatan</p>
-      <button class="copy-btn" id="copyBtn">📋 Salin ke hari lain</button>
-    </div>
-
-    <div class="copy-panel" id="copyPanel" style="display:none;">
-      <p class="copy-panel-label">Pilih hari tujuan:</p>
-      <div class="copy-days" id="copyDays"></div>
-    </div>
-
-    <div id="taskList"></div>
-
-    <button class="clear-link" id="clearBtn" style="display:none;">hapus semua kegiatan hari ini</button>
 
     <p class="footer-note">kamu keren, jangan lupa istirahat ✨</p>
   </div>
@@ -510,6 +784,8 @@
   let memoryStore = {}; // fallback if window.storage unavailable
   let activeDay = JS_DAY_TO_KEY[new Date().getDay()];
   let tasks = [];
+  let activeTemplate = []; // full history of tasks (all weeks) for the currently viewed day
+  let jadwalWeekKey = currentWeekKey();
 
   const dayTabsEl = document.getElementById('dayTabs');
   const taskListEl = document.getElementById('taskList');
@@ -524,6 +800,26 @@
   const toastEl = document.getElementById('toast');
   const toastMsgEl = document.getElementById('toastMsg');
   const toastUndoBtn = document.getElementById('toastUndoBtn');
+
+  const navJadwal = document.getElementById('navJadwal');
+  const navGrafik = document.getElementById('navGrafik');
+  const pageJadwal = document.getElementById('pageJadwal');
+  const pageGrafik = document.getElementById('pageGrafik');
+  const chartBarsEl = document.getElementById('chartBars');
+  const chartLabelsEl = document.getElementById('chartLabels');
+  const statTotalEl = document.getElementById('statTotal');
+  const statDoneEl = document.getElementById('statDone');
+  const statAvgEl = document.getElementById('statAvg');
+  const weekNavLabelEl = document.getElementById('weekNavLabel');
+  const prevWeekBtn = document.getElementById('prevWeekBtn');
+  const nextWeekBtn = document.getElementById('nextWeekBtn');
+
+  const prevWeekBtnJadwal = document.getElementById('prevWeekBtnJadwal');
+  const nextWeekBtnJadwal = document.getElementById('nextWeekBtnJadwal');
+  const weekNavLabelJadwal = document.getElementById('weekNavLabelJadwal');
+  const readonlyBanner = document.getElementById('readonlyBanner');
+  const readonlyBackBtn = document.getElementById('readonlyBackBtn');
+  const addCard = document.getElementById('addCard');
 
   let pendingUndo = null;
   let toastTimer = null;
@@ -584,18 +880,129 @@
     }catch(e){ /* ignore, memory fallback already set */ }
   }
 
-  function taskKey(day){ return 'jadwal-tasks:' + day; }
+  function taskKey(day){ return 'jadwal-tasks:' + day; } // legacy key (pre-weekly-reset)
+  function tplKey(day){ return 'jadwal-tpl:' + day; }
+  function doneKey(weekKey, day){ return 'jadwal-done:' + weekKey + ':' + day; }
 
-  async function loadDay(day){
-    const raw = await storageGet(taskKey(day));
+  function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+
+  function getMonday(d){
+    const date = new Date(d);
+    date.setHours(0,0,0,0);
+    const dow = date.getDay(); // 0=Min,1=Sen...
+    const diff = (dow === 0 ? -6 : 1 - dow);
+    date.setDate(date.getDate() + diff);
+    return date;
+  }
+
+  function weekKeyFromDate(d){
+    const m = getMonday(d);
+    return m.getFullYear() + '-' + pad2(m.getMonth()+1) + '-' + pad2(m.getDate());
+  }
+
+  function currentWeekKey(){ return weekKeyFromDate(new Date()); }
+
+  function weekLabel(weekKey){
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const monday = new Date(weekKey + 'T00:00:00');
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const sameMonth = monday.getMonth() === sunday.getMonth();
+    const left = monday.getDate() + (sameMonth ? '' : ' ' + bulan[monday.getMonth()]);
+    const right = sunday.getDate() + ' ' + bulan[sunday.getMonth()] + ' ' + sunday.getFullYear();
+    return left + ' - ' + right;
+  }
+
+  function genId(){ return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  const EPOCH_WEEK = '0000-01-01'; // sentinel: "existed since forever" (used for tasks with unknown creation week)
+
+  function normalizeTpl(rawTpl){
+    return (rawTpl || []).map(t => ({
+      id: t.id,
+      time: t.time,
+      text: t.text,
+      addedWeek: t.addedWeek || EPOCH_WEEK,
+      removedWeek: t.removedWeek || null
+    }));
+  }
+
+  // A task is visible in a given week if it had already been added by then, and hadn't been removed yet.
+  function isVisibleInWeek(t, weekKey){
+    if(weekKey < t.addedWeek) return false;
+    if(t.removedWeek && weekKey >= t.removedWeek) return false;
+    return true;
+  }
+
+  // Loads the FULL history of tasks ever created for a day (all weeks), normalized.
+  async function loadFullTemplate(day){
+    const raw = await storageGet(tplKey(day));
+    if(raw){
+      try{ return normalizeTpl(JSON.parse(raw)); }catch(e){ return []; }
+    }
+    // migrate legacy single-key format (time,text,done all in one, no week separation)
+    const legacyRaw = await storageGet(taskKey(day));
+    if(legacyRaw){
+      try{
+        const legacy = JSON.parse(legacyRaw);
+        const tpl = normalizeTpl(legacy.map(t => ({ id: genId(), time: t.time, text: t.text })));
+        await storageSet(tplKey(day), JSON.stringify(tpl));
+        const doneIds = legacy.filter(t=>t.done).map((t,idx)=> tpl[idx].id);
+        if(doneIds.length){
+          await storageSet(doneKey(currentWeekKey(), day), JSON.stringify(doneIds));
+        }
+        return tpl;
+      }catch(e){ return []; }
+    }
+    return [];
+  }
+
+  async function saveFullTemplate(day, fullTpl){
+    await storageSet(tplKey(day), JSON.stringify(fullTpl));
+  }
+
+  async function loadDoneIds(weekKey, day){
+    const raw = await storageGet(doneKey(weekKey, day));
     if(raw){
       try{ return JSON.parse(raw); }catch(e){ return []; }
     }
-    return null;
+    return [];
   }
 
-  async function saveDay(day, list){
-    await storageSet(taskKey(day), JSON.stringify(list));
+  async function saveDoneIds(weekKey, day, ids){
+    await storageSet(doneKey(weekKey, day), JSON.stringify(ids));
+  }
+
+  function deriveWeekView(fullTpl, weekKey, doneIds){
+    const doneSet = new Set(doneIds);
+    return fullTpl
+      .filter(t => isVisibleInWeek(t, weekKey))
+      .map(t => ({ id:t.id, time:t.time, text:t.text, done: doneSet.has(t.id) }));
+  }
+
+  // Loads the full history AND the merged (filtered + completion) view for a given day within a given week.
+  async function loadDayForWeek(weekKey, day){
+    const fullTpl = await loadFullTemplate(day);
+    const doneIds = await loadDoneIds(weekKey, day);
+    return { fullTpl, view: deriveWeekView(fullTpl, weekKey, doneIds) };
+  }
+
+  // In an existing (non-current-week) task, mark it removed as of now; a task that was only ever
+  // added this same week never existed elsewhere, so it can just be deleted outright.
+  function removeFromTemplate(fullTpl, taskId){
+    const idx = fullTpl.findIndex(t => t.id === taskId);
+    if(idx === -1) return;
+    if(fullTpl[idx].addedWeek === currentWeekKey()){
+      fullTpl.splice(idx, 1);
+    } else {
+      fullTpl[idx].removedWeek = currentWeekKey();
+    }
+  }
+
+  // Persists this week's completion state from the current `tasks` array.
+  async function saveDoneForCurrentWeek(){
+    const doneIds = tasks.filter(t=>t.done).map(t=>t.id);
+    await saveDoneIds(jadwalWeekKey, activeDay, doneIds);
   }
 
   function sortTasks(list){
@@ -613,23 +1020,28 @@
     });
   }
 
+  function isCurrentJadwalWeek(){ return jadwalWeekKey === currentWeekKey(); }
+
   function renderTasks(){
     taskListEl.innerHTML = '';
+    const readOnly = !isCurrentJadwalWeek();
     if(tasks.length === 0){
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.textContent = 'Belum ada jadwal buat hari ini. Yuk tambahin! 📝';
+      empty.textContent = readOnly
+        ? 'Nggak ada kegiatan tercatat di minggu ini. 📭'
+        : 'Belum ada jadwal buat hari ini. Yuk tambahin! 📝';
       taskListEl.appendChild(empty);
       clearBtn.style.display = 'none';
     } else {
       tasks.forEach((t, idx)=>{
         const row = document.createElement('div');
-        row.className = 'task' + (t.done ? ' done' : '');
+        row.className = 'task' + (t.done ? ' done' : '') + (readOnly ? ' readonly' : '');
 
         const check = document.createElement('div');
         check.className = 'check';
         check.textContent = t.done ? '✓' : '';
-        check.addEventListener('click', ()=> toggleTask(idx));
+        if(!readOnly) check.addEventListener('click', ()=> toggleTask(idx));
 
         const time = document.createElement('span');
         time.className = 'task-time';
@@ -639,20 +1051,28 @@
         text.className = 'task-text';
         text.textContent = t.text;
 
-        const del = document.createElement('button');
-        del.className = 'del-btn';
-        del.textContent = '✕';
-        del.addEventListener('click', ()=> deleteTask(idx));
-
         row.appendChild(check);
         row.appendChild(time);
         row.appendChild(text);
-        row.appendChild(del);
+
+        if(!readOnly){
+          const del = document.createElement('button');
+          del.className = 'del-btn';
+          del.textContent = '✕';
+          del.addEventListener('click', ()=> deleteTask(idx));
+          row.appendChild(del);
+        }
+
         taskListEl.appendChild(row);
       });
-      clearBtn.style.display = 'block';
+      clearBtn.style.display = readOnly ? 'none' : 'block';
     }
     copyBtn.disabled = tasks.length === 0;
+    addCard.style.display = readOnly ? 'none' : 'block';
+    copyBtn.style.display = readOnly ? 'none' : 'inline-block';
+    readonlyBanner.style.display = readOnly ? 'block' : 'none';
+    weekNavLabelJadwal.textContent = weekLabel(jadwalWeekKey) + (isCurrentJadwalWeek() ? ' (ini)' : '');
+    nextWeekBtnJadwal.disabled = isCurrentJadwalWeek();
     updateProgress();
   }
 
@@ -667,15 +1087,17 @@
   async function toggleTask(idx){
     tasks[idx].done = !tasks[idx].done;
     renderTasks();
-    await saveDay(activeDay, tasks);
+    await saveDoneForCurrentWeek();
   }
 
   async function deleteTask(idx){
     const label = tasks[idx].text;
     if(!confirm('Hapus kegiatan "' + label + '"?')) return;
+    removeFromTemplate(activeTemplate, tasks[idx].id);
+    await saveFullTemplate(activeDay, activeTemplate);
     tasks.splice(idx,1);
     renderTasks();
-    await saveDay(activeDay, tasks);
+    await saveDoneForCurrentWeek();
   }
 
   async function addTask(){
@@ -687,18 +1109,22 @@
       textInput.focus();
       return;
     }
-    tasks.push({time, text, done:false});
+    const newTask = { id: genId(), time, text, addedWeek: currentWeekKey(), removedWeek: null };
+    activeTemplate.push(newTask);
+    await saveFullTemplate(activeDay, activeTemplate);
+    tasks.push({ id:newTask.id, time, text, done:false });
     tasks = sortTasks(tasks);
     textInput.value = '';
     renderTasks();
-    await saveDay(activeDay, tasks);
   }
 
   async function clearAll(){
     if(!confirm('Hapus semua kegiatan untuk hari ini?')) return;
+    tasks.forEach(t => removeFromTemplate(activeTemplate, t.id));
+    await saveFullTemplate(activeDay, activeTemplate);
     tasks = [];
     renderTasks();
-    await saveDay(activeDay, tasks);
+    await saveDoneIds(jadwalWeekKey, activeDay, []);
   }
 
   function renderCopyPanel(){
@@ -713,22 +1139,36 @@
   }
 
   async function copyToDay(targetDay, targetLabel){
-    const existing = await loadDay(targetDay);
-    const hasExisting = existing && existing.length > 0;
+    const targetFullTpl = await loadFullTemplate(targetDay);
+    const targetDoneIds = await loadDoneIds(currentWeekKey(), targetDay);
+    const targetView = deriveWeekView(targetFullTpl, currentWeekKey(), targetDoneIds);
+    const hasExisting = targetView.length > 0;
     const confirmMsg = hasExisting
       ? 'Salin kegiatan ke hari ' + targetLabel + '? Jadwal yang sudah ada di hari itu akan ditimpa.'
       : 'Salin semua kegiatan hari ini ke hari ' + targetLabel + '?';
     if(!confirm(confirmMsg)) return;
 
-    const previousTasks = hasExisting ? existing : [];
-    const copied = tasks.map(t=> ({time:t.time, text:t.text, done:false}));
-    await saveDay(targetDay, sortTasks(copied));
+    // snapshot for undo
+    const previousFullTpl = targetFullTpl.map(t => Object.assign({}, t));
+    const previousDoneIds = targetDoneIds.slice();
+
+    // remove/mark-removed everything currently visible on the target day this week...
+    targetView.forEach(t => removeFromTemplate(targetFullTpl, t.id));
+    // ...then add fresh copies, starting from this week onward
+    const copied = tasks.map(t=> ({ id: genId(), time:t.time, text:t.text, addedWeek: currentWeekKey(), removedWeek: null }));
+    const updatedFullTpl = targetFullTpl.concat(copied);
+
+    await saveFullTemplate(targetDay, updatedFullTpl);
+    await saveDoneIds(currentWeekKey(), targetDay, []);
     copyPanel.style.display = 'none';
 
     showToast('Disalin ke hari ' + targetLabel + ' ✨', async ()=>{
-      await saveDay(targetDay, previousTasks);
+      await saveFullTemplate(targetDay, previousFullTpl);
+      await saveDoneIds(currentWeekKey(), targetDay, previousDoneIds);
       if(activeDay === targetDay){
-        tasks = sortTasks(previousTasks);
+        const { fullTpl, view } = await loadDayForWeek(jadwalWeekKey, targetDay);
+        activeTemplate = fullTpl;
+        tasks = sortTasks(view);
         renderTasks();
       }
     });
@@ -741,9 +1181,77 @@
     listTitleEl.textContent = 'Kegiatan · ' + label.toUpperCase();
     copyPanel.style.display = 'none';
     renderCopyPanel();
-    const loaded = await loadDay(day);
-    tasks = loaded ? sortTasks(loaded) : [];
+    const { fullTpl, view } = await loadDayForWeek(jadwalWeekKey, day);
+    activeTemplate = fullTpl;
+    tasks = sortTasks(view);
     renderTasks();
+  }
+
+  let chartWeekKey = currentWeekKey();
+
+  async function renderChart(){
+    chartBarsEl.innerHTML = '';
+    chartLabelsEl.innerHTML = '';
+    weekNavLabelEl.textContent = weekLabel(chartWeekKey);
+    const isCurrentWeek = chartWeekKey === currentWeekKey();
+    nextWeekBtn.disabled = isCurrentWeek;
+
+    const results = await Promise.all(DAYS.map(d => loadDayForWeek(chartWeekKey, d.key)));
+
+    let grandTotal = 0, grandDone = 0, dayCountWithData = 0, pctSum = 0;
+    const todayKey = JS_DAY_TO_KEY[new Date().getDay()];
+
+    DAYS.forEach((d, i)=>{
+      const list = results[i] ? results[i].view : [];
+      const total = list.length;
+      const done = list.filter(t=>t.done).length;
+      const pct = total === 0 ? 0 : Math.round((done/total)*100);
+      const isToday = isCurrentWeek && d.key === todayKey;
+
+      if(total > 0){
+        grandTotal += total;
+        grandDone += done;
+        pctSum += pct;
+        dayCountWithData++;
+      }
+
+      const col = document.createElement('div');
+      col.className = 'chart-col';
+
+      const pctLabel = document.createElement('div');
+      pctLabel.className = 'chart-col-pct';
+      pctLabel.textContent = total === 0 ? '–' : pct + '%';
+
+      const bar = document.createElement('div');
+      const barHeight = total === 0 ? 4 : Math.max(4, Math.round((pct/100) * 140));
+      bar.className = 'chart-bar' + (total === 0 ? ' empty' : (isToday ? ' today' : ''));
+      bar.style.height = barHeight + 'px';
+
+      col.appendChild(pctLabel);
+      col.appendChild(bar);
+      chartBarsEl.appendChild(col);
+
+      const label = document.createElement('div');
+      label.className = 'chart-col-label' + (isToday ? ' today' : '');
+      label.textContent = d.short;
+      chartLabelsEl.appendChild(label);
+    });
+
+    statTotalEl.textContent = grandTotal;
+    statDoneEl.textContent = grandDone;
+    statAvgEl.textContent = (dayCountWithData === 0 ? 0 : Math.round(pctSum / dayCountWithData)) + '%';
+  }
+
+  function showPage(name){
+    const isJadwal = name === 'jadwal';
+    pageJadwal.classList.toggle('active', isJadwal);
+    pageGrafik.classList.toggle('active', !isJadwal);
+    navJadwal.classList.toggle('active', isJadwal);
+    navGrafik.classList.toggle('active', !isJadwal);
+    if(!isJadwal){
+      chartWeekKey = currentWeekKey();
+      renderChart();
+    }
   }
 
   async function init(){
@@ -759,6 +1267,38 @@
     copyBtn.addEventListener('click', ()=>{
       if(tasks.length === 0) return;
       copyPanel.style.display = copyPanel.style.display === 'none' ? 'block' : 'none';
+    });
+    navJadwal.addEventListener('click', ()=> showPage('jadwal'));
+    navGrafik.addEventListener('click', ()=> showPage('grafik'));
+    prevWeekBtn.addEventListener('click', ()=>{
+      const d = new Date(chartWeekKey + 'T00:00:00');
+      d.setDate(d.getDate() - 7);
+      chartWeekKey = weekKeyFromDate(d);
+      renderChart();
+    });
+    nextWeekBtn.addEventListener('click', ()=>{
+      if(chartWeekKey === currentWeekKey()) return;
+      const d = new Date(chartWeekKey + 'T00:00:00');
+      d.setDate(d.getDate() + 7);
+      chartWeekKey = weekKeyFromDate(d);
+      renderChart();
+    });
+    prevWeekBtnJadwal.addEventListener('click', async ()=>{
+      const d = new Date(jadwalWeekKey + 'T00:00:00');
+      d.setDate(d.getDate() - 7);
+      jadwalWeekKey = weekKeyFromDate(d);
+      await switchDay(activeDay);
+    });
+    nextWeekBtnJadwal.addEventListener('click', async ()=>{
+      if(isCurrentJadwalWeek()) return;
+      const d = new Date(jadwalWeekKey + 'T00:00:00');
+      d.setDate(d.getDate() + 7);
+      jadwalWeekKey = weekKeyFromDate(d);
+      await switchDay(activeDay);
+    });
+    readonlyBackBtn.addEventListener('click', async ()=>{
+      jadwalWeekKey = currentWeekKey();
+      await switchDay(activeDay);
     });
   }
 
