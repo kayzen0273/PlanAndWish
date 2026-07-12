@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💑 Wishlist Kita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #FFF8F2;
+    --cream-deep: #FFF1E6;
+    --pink-light: #FFDCE8;
+    --pink: #FF9AB6;
+    --pink-deep: #FF5C8A;
+    --lavender: #DCCFFF;
+    --mint: #BDEFD9;
+    --butter: #FFE7A8;
+    --ink: #5B4B49;
+    --ink-soft: #9A857F;
+    --white: #FFFFFF;
+    --shadow: rgba(196, 140, 160, 0.25);
+    --radius: 20px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Quicksand', sans-serif;
+    overflow-x: hidden;
+  }
+
+  body{
+    background-image:
+      radial-gradient(circle at 10% 15%, rgba(255,220,232,0.55) 0, transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(220,207,255,0.5) 0, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(189,239,217,0.45) 0, transparent 45%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3{ font-family: 'Baloo 2', sans-serif; margin: 0; }
+
+  .deco{
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    animation: float 7s ease-in-out infinite;
+    user-select: none;
+  }
+  .deco.d1{ top: 6%; left: 4%; font-size: 34px; animation-delay: 0s; }
+  .deco.d2{ top: 14%; right: 7%; font-size: 26px; animation-delay: 1.2s; }
+  .deco.d3{ top: 45%; left: 2%; font-size: 22px; animation-delay: 2.1s; }
+  .deco.d4{ bottom: 10%; right: 4%; font-size: 30px; animation-delay: 0.6s; }
+  .deco.d5{ bottom: 20%; left: 8%; font-size: 20px; animation-delay: 1.8s; }
+  .deco.d6{ top: 65%; right: 10%; font-size: 24px; animation-delay: 2.6s; }
+
+  @keyframes float{
+    0%, 100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-14px) rotate(8deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .deco{ animation: none; }
+    *{ scroll-behavior: auto !important; }
+  }
+
+  .wrap{
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  header{
+    text-align: center;
+    margin-bottom: 34px;
+  }
+
+  .title-badge{
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pink-deep);
+    font-weight: 700;
+    background: var(--white);
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 999px;
+    box-shadow: 0 4px 0 var(--pink-light);
+    margin-bottom: 14px;
+  }
+
+  h1.main-title{
+    font-size: clamp(34px, 6vw, 52px);
+    font-weight: 800;
+    color: var(--ink);
+    text-shadow: 3px 3px 0 var(--pink-light);
+    line-height: 1.1;
+  }
+
+  .subtitle{
+    font-family: 'Caveat', cursive;
+    font-size: 24px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .stats{
+    margin-top: 16px;
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat-pill{
+    background: var(--white);
+    border: 2px solid var(--pink-light);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  /* ---- Shared-wishlist hint ---- */
+  .mode-hint{
+    font-family: 'Caveat', cursive;
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  /* ---- Add form: sticky note ---- */
+  .add-card{
+    position: relative;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 28px 26px 24px;
+    box-shadow: 0 14px 0 -6px var(--shadow), 0 16px 30px var(--shadow);
+    margin-bottom: 44px;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 3px solid var(--pink-light);
+  }
+
+  .add-card .pin{
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--pink-deep);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 10px var(--shadow);
+  }
+
+  .add-card h2{
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .field input[type="text"],
+  .field input[type="url"],
+  .field select,
+  .field textarea{
+    width: 100%;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 11px 14px;
+    border-radius: 14px;
+    border: 2px solid var(--cream-deep);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .field textarea{ resize: vertical; min-height: 56px; font-weight: 500; }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus{
+    border-color: var(--pink);
+    background: var(--white);
+  }
+
+  .link-row{ display: flex; gap: 8px; }
+  .link-row input{ flex: 1; }
+  .paste-btn{
+    flex-shrink: 0;
+    border: none;
+    background: var(--lavender);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 0 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+  }
+  .paste-btn:hover{ background: var(--pink-light); transform: translateY(-2px); }
+  .paste-btn:active{ transform: translateY(0); }
+
+  .submit-btn{
+    width: 100%;
+    margin-top: 6px;
+    border: none;
+    background: var(--pink-deep);
+    color: white;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 13px;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #d63f6b;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+  }
+  .submit-btn:hover{ transform: translateY(-2px); }
+  .submit-btn:active{ transform: translateY(3px); box-shadow: 0 2px 0 #d63f6b; }
+
+  /* ---- Section headers ---- */
+  .section-title{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 22px;
+    margin: 30px 0 18px;
+    color: var(--ink);
+  }
+  .section-title .line{
+    flex: 1;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--pink-light), var(--pink-light) 8px, transparent 8px, transparent 14px);
+    border-radius: 4px;
+  }
+
+  /* ---- Board grid ---- */
+  .board{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 26px;
+    padding: 6px 4px 10px;
+  }
+
+  .card{
+    position: relative;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 18px 16px 16px;
+    box-shadow: 0 10px 20px var(--shadow);
+    transform: rotate(var(--rot, -1deg));
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    animation: pop-in 0.35s ease;
+  }
+  .card:hover{
+    transform: rotate(0deg) translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 26px var(--shadow);
+  }
+
+  @keyframes pop-in{
+    from{ opacity: 0; transform: scale(0.85) rotate(var(--rot,0deg)); }
+    to{ opacity: 1; transform: scale(1) rotate(var(--rot,0deg)); }
+  }
+
+  .washi{
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 70px;
+    height: 22px;
+    background: var(--tape-color, var(--pink-light));
+    opacity: 0.85;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  }
+
+  .del-btn{
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--cream-deep);
+    color: var(--ink-soft);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
+  }
+  .del-btn:hover{ background: var(--pink-deep); color: white; transform: rotate(90deg); }
+
+  .card-top{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  .cat-badge{
+    font-size: 18px;
+    background: var(--cream);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .domain-badge{
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    background: var(--cream);
+    padding: 3px 9px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .domain-badge img{ width: 12px; height: 12px; border-radius: 2px; }
+
+  .item-name{
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .card.is-got .item-name{ text-decoration: line-through; color: var(--ink-soft); }
+
+  .item-note{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .priority-label{
+    font-family: 'Caveat', cursive;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+  .hearts{ margin-bottom: 12px; }
+  .heart-btn{
+    background: none;
+    border: none;
+    font-size: 17px;
+    cursor: pointer;
+    padding: 0 1px;
+    filter: grayscale(1) opacity(0.4);
+    transition: filter 0.12s, transform 0.12s;
+  }
+  .heart-btn.filled{ filter: none; }
+  .heart-btn:hover{ transform: scale(1.2); }
+
+  .card-actions{
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .visit-btn{
+    text-align: center;
+    text-decoration: none;
+    background: var(--mint);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px;
+    border-radius: 12px;
+    transition: transform 0.12s, background 0.15s;
+  }
+  .visit-btn:hover{ background: var(--pink-light); transform: translateY(-2px); }
+  .visit-btn.disabled{
+    background: var(--cream-deep);
+    color: var(--ink-soft);
+    cursor: default;
+    pointer-events: none;
+  }
+  .got-btn{
+    border: 2px solid var(--pink-deep);
+    background: transparent;
+    color: var(--pink-deep);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 7px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .got-btn:hover{ background: var(--pink-deep); color: white; }
+  .card.is-got .got-btn{
+    border-color: var(--ink-soft);
+    color: var(--ink-soft);
+  }
+  .card.is-got .got-btn:hover{ background: var(--ink-soft); color: white; }
+
+  .card.is-got{ opacity: 0.82; }
+  .got-ribbon{
+    position: absolute;
+    top: 10px;
+    left: -6px;
+    background: var(--butter);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px 3px 8px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.1);
+  }
+
+  /* ---- Empty state ---- */
+  .empty-state{
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-soft);
+  }
+  .empty-state .emoji{ font-size: 46px; display: block; margin-bottom: 10px; }
+  .empty-state p{ font-family: 'Caveat', cursive; font-size: 20px; margin: 0; }
+
+  .loading-state{
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: var(--ink-soft);
+  }
+
+  footer{
+    text-align: center;
+    margin-top: 50px;
+  }
+  .clear-btn{
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+  .clear-btn:hover{ opacity: 1; color: var(--pink-deep); }
+
+  /* heart burst */
+  .burst-heart{
+    position: fixed;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 50;
+    animation: burst-up 1s ease-out forwards;
+  }
+  @keyframes burst-up{
+    0%{ opacity: 1; transform: translate(0,0) scale(0.6); }
+    100%{ opacity: 0; transform: translate(var(--dx,0px), -90px) scale(1.1); }
+  }
+
+  .visually-hidden{
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible{
+    outline: 3px solid var(--pink-deep);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 480px){
+    .add-card{ padding: 22px 18px 18px; }
+    .board{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px; }
+    h1.main-title{ font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+  <span class="deco d1" aria-hidden="true">⭐</span>
+  <span class="deco d2" aria-hidden="true">🎀</span>
+  <span class="deco d3" aria-hidden="true">💫</span>
+  <span class="deco d4" aria-hidden="true">🩷</span>
+  <span class="deco d5" aria-hidden="true">✨</span>
+  <span class="deco d6" aria-hidden="true">🎀</span>
+
+  <div class="wrap">
+    <header>
+      <span class="title-badge">wishlist board</span>
+      <h1 class="main-title">💑 Wishlist Kita</h1>
+      <p class="subtitle">kumpulin barang, tempat, atau apa aja yang kalian berdua idam-idamkan~</p>
+      <p class="mode-hint">wishlist ini bisa dilihat kalian berdua ya~ 💗</p>
+      <div class="stats" id="statsRow"></div>
+    </header>
+
+    <div class="add-card">
+      <div class="pin">🎀</div>
+      <h2>Tambahin ke Wishlist Kita</h2>
+      <form id="addForm">
+        <div class="field">
+          <label for="nameInput">Nama (barang, tempat, atau apa aja)</label>
+          <input type="text" id="nameInput" placeholder="misalnya: Dress pink, liburan ke Bali, nonton konser..." required maxlength="80">
+        </div>
+        <div class="field">
+          <label for="linkInput">Link (opsional)</label>
+          <div class="link-row">
+            <input type="url" id="linkInput" placeholder="link produk, maps, artikel, dll ✨" maxlength="500">
+            <button type="button" class="paste-btn" id="pasteBtn">📋 Tempel</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="catInput">Kategori</label>
+          <select id="catInput"></select>
+        </div>
+        <div class="field">
+          <label for="noteInput">Catatan (opsional)</label>
+          <textarea id="noteInput" placeholder="detail, alasan, atau kenapa pengen banget 💭" maxlength="160"></textarea>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">Tambahin ke Wishlist 🎀</button>
+      </form>
+    </div>
+
+    <div id="content">
+      <div class="loading-state">membuka wishlist kamu... 💭</div>
+    </div>
+
+    <footer>
+      <button class="clear-btn" id="clearAllBtn">🗑️ hapus semua wishlist</button>
+    </footer>
+  </div>
+
+<script>
+  const CATS = {
+    fashion:    { emoji: '👗', label: 'Fashion' },
+    beauty:     { emoji: '💄', label: 'Skincare & Makeup' },
+    book:       { emoji: '📚', label: 'Buku' },
+    accessory:  { emoji: '💍', label: 'Aksesoris' },
+    hobby:      { emoji: '🎮', label: 'Hobi & Game' },
+    home:       { emoji: '🏠', label: 'Rumah & Kamar' },
+    travel:     { emoji: '✈️', label: 'Tempat & Liburan' },
+    food:       { emoji: '🍰', label: 'Kuliner' },
+    experience: { emoji: '🎡', label: 'Pengalaman & Aktivitas' },
+    watch:      { emoji: '🎬', label: 'Nonton & Hiburan' },
+    other:      { emoji: '💭', label: 'Lainnya' }
+  };
+
+  const TAPE_COLORS = ['var(--pink-light)', 'var(--mint)', 'var(--lavender)', 'var(--butter)'];
+
+  const STORAGE_KEY = 'wishlist-items-shared';
+  const EMPTY_TEXT = 'wishlist kita masih kosong nih... yuk tambahin impian pertama kalian!';
+
+  let items = [];
+  let storageReady = true;
+
+  const contentEl = document.getElementById('content');
+  const statsRow = document.getElementById('statsRow');
+  const catInput = document.getElementById('catInput');
+  const addForm = document.getElementById('addForm');
+
+  // populate category select
+  Object.entries(CATS).forEach(([key, val]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = `${val.emoji} ${val.label}`;
+    catInput.appendChild(opt);
+  });
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+
+  function hashCode(str){
+    let hash = 0;
+    for(let i = 0; i < str.length; i++){
+      hash = (hash * 31 + str.charCodeAt(i)) & 0xffffffff;
+    }
+    return Math.abs(hash);
+  }
+
+  function rotationFor(id){
+    return ((hashCode(id) % 60) / 10 - 3).toFixed(1);
+  }
+
+  function tapeColorFor(id){
+    return TAPE_COLORS[hashCode(id + 'tape') % TAPE_COLORS.length];
+  }
+
+  function getDomain(url){
+    if(!url) return null;
+    try{
+      const withScheme = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+      const u = new URL(withScheme);
+      return u.hostname.replace(/^www\./, '');
+    }catch(e){
+      return null;
+    }
+  }
+
+  function normalizeLink(url){
+    if(!url) return '';
+    return /^https?:\/\//i.test(url) ? url : 'https://' + url;
+  }
+
+  async function loadItems(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, true);
+      items = res ? JSON.parse(res.value) : [];
+    }catch(e){
+      items = [];
+    }
+    render();
+  }
+
+  async function saveItems(){
+    try{
+      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(items), true);
+      if(!result){ storageReady = false; }
+    }catch(e){
+      storageReady = false;
+      console.error('gagal simpan wishlist', e);
+    }
+  }
+
+  function renderCard(item){
+    const cat = CATS[item.category] || CATS.other;
+    const domain = getDomain(item.link);
+    const rot = rotationFor(item.id);
+    const tape = tapeColorFor(item.id);
+
+    const domainBadge = domain
+      ? `<span class="domain-badge">
+           <img src="https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(domain)}" alt="" onerror="this.style.display='none'">
+           ${escapeHtml(domain)}
+         </span>`
+      : '';
+
+    const visitBtn = item.link
+      ? `<a href="${escapeHtml(normalizeLink(item.link))}" target="_blank" rel="noopener noreferrer" class="visit-btn">Buka Link 🔗</a>`
+      : `<span class="visit-btn disabled">Belum ada link</span>`;
+
+    const hearts = [1,2,3].map(n =>
+      `<button type="button" class="heart-btn ${n <= (item.priority||1) ? 'filled' : ''}" data-action="priority" data-value="${n}" aria-label="Set prioritas ${n}">♥</button>`
+    ).join('');
+
+    const gotRibbon = item.gotIt ? `<div class="got-ribbon">🎉 kesampean!</div>` : '';
+    const gotBtnLabel = item.gotIt ? 'Balikin ke Wishlist' : 'Udah Dapet ✨';
+
+    return `
+      <div class="card ${item.gotIt ? 'is-got' : ''}" style="--rot:${rot}deg; --tape-color:${tape}" data-id="${item.id}">
+        <div class="washi"></div>
+        ${gotRibbon}
+        <button type="button" class="del-btn" data-action="delete" aria-label="Hapus barang ini">✕</button>
+        <div class="card-top">
+          <span class="cat-badge">${cat.emoji}</span>
+          ${domainBadge}
+        </div>
+        <h3 class="item-name">${escapeHtml(item.name)}</h3>
+        ${item.note ? `<p class="item-note">${escapeHtml(item.note)}</p>` : ''}
+        <div class="priority-label">seberapa pengen:</div>
+        <div class="hearts">${hearts}</div>
+        <div class="card-actions">
+          ${visitBtn}
+          <button type="button" class="got-btn" data-action="toggle-got">${gotBtnLabel}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const wishing = items.filter(i => !i.gotIt);
+    const got = items.filter(i => i.gotIt);
+
+    statsRow.innerHTML = `
+      <span class="stat-pill">💌 ${wishing.length} diidam-idamkan</span>
+      <span class="stat-pill">🎉 ${got.length} udah kesampean</span>
+    `;
+
+    let html = '';
+
+    html += `<h2 class="section-title">✨ Masih Diidam-idamkan <span class="line"></span></h2>`;
+    if(wishing.length === 0){
+      html += `<div class="empty-state">
+                 <span class="emoji">🎀</span>
+                 <p>${EMPTY_TEXT}</p>
+               </div>`;
+    }else{
+      html += `<div class="board" id="boardWishing">${wishing.map(renderCard).join('')}</div>`;
+    }
+
+    if(got.length > 0){
+      html += `<h2 class="section-title">🎉 Udah Kesampean! <span class="line"></span></h2>`;
+      html += `<div class="board" id="boardGot">${got.map(renderCard).join('')}</div>`;
+    }
+
+    contentEl.innerHTML = html;
+  }
+
+  function spawnHearts(x, y){
+    const burstEmojis = ['💗','✨','🩷','💫'];
+    for(let i = 0; i < 6; i++){
+      const el = document.createElement('span');
+      el.className = 'burst-heart';
+      el.textContent = burstEmojis[i % burstEmojis.length];
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+  }
+
+  // ---- Event: add form ----
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('nameInput').value.trim();
+    const link = document.getElementById('linkInput').value.trim();
+    const category = catInput.value;
+    const note = document.getElementById('noteInput').value.trim();
+
+    if(!name) return;
+
+    const newItem = {
+      id: 'w' + Date.now() + Math.random().toString(36).slice(2,7),
+      name, link, category, note,
+      priority: 1,
+      gotIt: false,
+      createdAt: Date.now()
+    };
+
+    items.unshift(newItem);
+    render();
+    await saveItems();
+
+    const btnRect = document.getElementById('submitBtn').getBoundingClientRect();
+    spawnHearts(btnRect.left + btnRect.width / 2, btnRect.top);
+
+    addForm.reset();
+    catInput.selectedIndex = 0;
+    document.getElementById('nameInput').focus();
+  });
+
+  // ---- Paste from clipboard ----
+  document.getElementById('pasteBtn').addEventListener('click', async () => {
+    try{
+      const text = await navigator.clipboard.readText();
+      if(text) document.getElementById('linkInput').value = text.trim();
+    }catch(e){
+      document.getElementById('linkInput').focus();
+      alert('Browser kamu nggak ngizinin ambil clipboard otomatis. Coba paste manual aja pakai Ctrl+V / Cmd+V ya 💦');
+    }
+  });
+
+  // ---- Card actions (event delegation) ----
+  contentEl.addEventListener('click', async (e) => {
+    const card = e.target.closest('.card');
+    if(!card) return;
+    const id = card.dataset.id;
+    const item = items.find(i => i.id === id);
+    if(!item) return;
+
+    const delBtn = e.target.closest('[data-action="delete"]');
+    const toggleBtn = e.target.closest('[data-action="toggle-got"]');
+    const heartBtn = e.target.closest('[data-action="priority"]');
+
+    if(delBtn){
+      items = items.filter(i => i.id !== id);
+      render();
+      await saveItems();
+      return;
+    }
+
+    if(toggleBtn){
+      item.gotIt = !item.gotIt;
+      render();
+      await saveItems();
+      if(item.gotIt){
+        const rect = toggleBtn.getBoundingClientRect();
+        spawnHearts(rect.left + rect.width / 2, rect.top);
+      }
+      return;
+    }
+
+    if(heartBtn){
+      item.priority = parseInt(heartBtn.dataset.value, 10);
+      render();
+      await saveItems();
+      return;
+    }
+  });
+
+  // ---- Clear all ----
+  document.getElementById('clearAllBtn').addEventListener('click', async () => {
+    if(items.length === 0) return;
+    const ok = confirm('Yakin mau hapus semua wishlist kita? Ini nggak bisa dibalikin lagi lho~');
+    if(!ok) return;
+    items = [];
+    render();
+    await saveItems();
+  });
+
+  loadItems();
+</script>
+</body>
+</html>
