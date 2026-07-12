@@ -19,6 +19,8 @@
     --mint-soft:#A9F2DE;
     --yellow:#FFC93C;
     --sky:#39C0F0;
+    --sky-soft:#C7ECFB;
+    --finblue:#4F7EF7;
     --font-display:'Baloo 2', sans-serif;
     --font-body:'Quicksand', sans-serif;
     --font-hand:'Caveat', cursive;
@@ -128,8 +130,11 @@
   /* ---------- menu grid ---------- */
   .menu-grid{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+  }
+  @media (max-width:720px){
+    .menu-grid{ grid-template-columns:1fr 1fr; gap:20px; }
   }
   @media (max-width:560px){
     .menu-grid{ grid-template-columns:1fr; gap:30px; }
@@ -152,6 +157,7 @@
 
   .menu-card.card-jadwal{ background:var(--pink); transform:rotate(-1.6deg); }
   .menu-card.card-wishlist{ background:var(--purple); transform:rotate(1.6deg); }
+  .menu-card.card-keuangan{ background:linear-gradient(135deg, var(--finblue), var(--sky) 85%); transform:rotate(-1.2deg); }
 
   .menu-card:hover{ transform:translate(-4px,-5px) rotate(0deg); box-shadow:9px 9px 0 var(--ink); }
   .menu-card:active{ transform:translate(2px,2px) rotate(0deg); box-shadow:3px 3px 0 var(--ink); }
@@ -172,6 +178,7 @@
     transform:rotate(-3deg);
   }
   .card-wishlist .tab-label{ background:var(--mint-soft); }
+  .card-keuangan .tab-label{ background:var(--sky-soft); }
 
   .badge{
     position:absolute;
@@ -196,6 +203,7 @@
   }
   .card-jadwal .badge{ background:var(--mint-soft); }
   .card-wishlist .badge{ background:var(--yellow); }
+  .card-keuangan .badge{ background:var(--pink-soft); }
 
   .card-icon{ font-size:30px; margin:16px 0 6px; }
 
@@ -268,7 +276,7 @@
     <header>
       <span class="tag">✨ menu utama</span>
       <h1 class="main-title">Hai! Yuk <span class="hl">Pilih Menu</span> 👋</h1>
-      <p class="tagline">jadwal harian & wishlist, dua-duanya ada di sini</p>
+      <p class="tagline">jadwal harian, wishlist & keuangan, semua ada di sini</p>
     </header>
 
     <nav class="menu-grid">
@@ -282,6 +290,20 @@
           <span>7 hari</span>
           <span>progress</span>
           <span>grafik</span>
+        </div>
+        <span class="cta">Buka →</span>
+      </a>
+
+      <a class="menu-card card-keuangan" href="keuanganku.html">
+        <span class="tab-label">💰 KEUANGAN</span>
+        <span class="badge">CATAT<br>DUIT</span>
+        <span class="card-icon">💸</span>
+        <h2>Keuanganku</h2>
+        <p>Catat pemasukan & pengeluaran, pantau saldo dan ringkasan keuangan dalam tampilan yang enak dilihat.</p>
+        <div class="tags">
+          <span>saldo</span>
+          <span>transaksi</span>
+          <span>ringkasan</span>
         </div>
         <span class="cta">Buka →</span>
       </a>
