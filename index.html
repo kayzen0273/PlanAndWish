@@ -387,24 +387,6 @@
     color:#7a3f56;
   }
 
-  .reset-all-wrap{
-    text-align:center;
-    margin-top:10px;
-  }
-  .reset-all-btn{
-    display:inline-block;
-    font-family:var(--font-mono);
-    font-size:11px;
-    font-weight:700;
-    color:#a8354f;
-    background:none;
-    border:none;
-    text-decoration:underline;
-    cursor:pointer;
-    opacity:.7;
-  }
-  .reset-all-btn:hover{ opacity:1; }
-
   /* ---------- TOAST / UNDO ---------- */
   .toast{
     position:fixed;
@@ -869,9 +851,6 @@
     </div>
 
     <p class="footer-note">kamu keren, jangan lupa istirahat ✨</p>
-    <div class="reset-all-wrap">
-      <button class="reset-all-btn" id="resetAllBtn">reset semua data (semua hari &amp; minggu)</button>
-    </div>
   </div>
 
   <div class="toast" id="toast">
@@ -1009,38 +988,6 @@
     try{
       localStorage.setItem(key, value);
     }catch(e){ /* ignore, memory fallback already set */ }
-  }
-
-  async function storageDelete(key){
-    delete memoryStore[key];
-    try{
-      if(window.storage && window.storage.delete){
-        await window.storage.delete(key, false);
-        return;
-      }
-    }catch(e){ /* ignore, fall through to localStorage */ }
-    try{
-      localStorage.removeItem(key);
-    }catch(e){ /* ignore */ }
-  }
-
-  // Finds every stored key starting with `prefix`, across window.storage, localStorage, and the memory fallback.
-  async function storageListKeys(prefix){
-    const keys = new Set();
-    try{
-      if(window.storage && window.storage.list){
-        const res = await window.storage.list(prefix, false);
-        if(res && res.keys) res.keys.forEach(k => keys.add(k));
-      }
-    }catch(e){ /* ignore */ }
-    try{
-      for(let i = 0; i < localStorage.length; i++){
-        const k = localStorage.key(i);
-        if(k && k.indexOf(prefix) === 0) keys.add(k);
-      }
-    }catch(e){ /* ignore */ }
-    Object.keys(memoryStore).forEach(k => { if(k.indexOf(prefix) === 0) keys.add(k); });
-    return Array.from(keys);
   }
 
   function taskKey(day){ return 'jadwal-tasks:' + day; } // legacy key (pre-weekly-reset)
@@ -1304,39 +1251,6 @@
     await saveDoneIds(jadwalWeekKey, activeDay, []);
   }
 
-  async function resetAllData(){
-    const sure = confirm('Reset SEMUA data jadwal? Ini akan menghapus kegiatan di semua hari dan semua minggu (termasuk riwayat & progres). Tindakan ini tidak bisa dibatalkan.');
-    if(!sure) return;
-    const reallySure = confirm('Yakin banget? Semua data akan hilang permanen dan tidak bisa diurungkan.');
-    if(!reallySure) return;
-
-    const prefixes = ['jadwal-tpl:', 'jadwal-tasks:', 'jadwal-done:'];
-    for(const prefix of prefixes){
-      const keys = await storageListKeys(prefix);
-      for(const key of keys){ await storageDelete(key); }
-    }
-    // belt-and-suspenders: explicitly clear each day's known keys even if list() isn't supported
-    for(const d of DAYS){
-      await storageDelete(tplKey(d.key));
-      await storageDelete(taskKey(d.key));
-    }
-
-    jadwalWeekKey = currentWeekKey();
-    activeTemplate = [];
-    tasks = [];
-    copyPanel.style.display = 'none';
-    renderTasks();
-
-    chartRangeStart = getMonday(new Date());
-    chartRangeEnd = addDays(chartRangeStart, 6);
-    if(pageGrafik.classList.contains('active')){
-      await renderChart();
-    }
-
-    hideToast();
-    alert('Semua data sudah direset. ✨');
-  }
-
   function renderCopyPanel(){
     copyDaysEl.innerHTML = '';
     DAYS.filter(d=>d.key!==activeDay).forEach(d=>{
@@ -1480,7 +1394,6 @@
       if(e.key === 'Enter') addTask();
     });
     clearBtn.addEventListener('click', clearAll);
-    document.getElementById('resetAllBtn').addEventListener('click', resetAllData);
     copyBtn.addEventListener('click', ()=>{
       if(tasks.length === 0) return;
       copyPanel.style.display = copyPanel.style.display === 'none' ? 'block' : 'none';
