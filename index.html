@@ -387,6 +387,24 @@
     color:#7a3f56;
   }
 
+  .reset-all-wrap{
+    text-align:center;
+    margin-top:10px;
+  }
+  .reset-all-btn{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    color:#a8354f;
+    background:none;
+    border:none;
+    text-decoration:underline;
+    cursor:pointer;
+    opacity:.7;
+  }
+  .reset-all-btn:hover{ opacity:1; }
+
   /* ---------- TOAST / UNDO ---------- */
   .toast{
     position:fixed;
@@ -494,6 +512,9 @@
     color:#4b4b4b;
     margin:0 0 16px;
   }
+  .chart-scroll{
+    overflow-x:auto;
+  }
   .chart-bars{
     display:flex;
     align-items:flex-end;
@@ -503,7 +524,7 @@
     padding-bottom:0;
   }
   .chart-col{
-    flex:1;
+    flex:0 0 34px;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -538,7 +559,7 @@
     margin-top:8px;
   }
   .chart-col-label{
-    flex:1;
+    flex:0 0 34px;
     text-align:center;
     font-family:var(--font-mono);
     font-weight:700;
@@ -661,6 +682,91 @@
   .readonly-back-btn:hover{ background:var(--pink); color:#fff; }
 
   .task.readonly .check{ cursor:default; opacity:.7; }
+
+  .week-nav-label.clickable{
+    cursor:pointer;
+    transition:transform .1s ease, background .1s ease;
+  }
+  .week-nav-label.clickable:hover{
+    background:var(--yellow);
+    transform:translateY(-1px);
+  }
+
+  /* ---------- DATE PICKER MODAL ---------- */
+  .modal-backdrop{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(30,26,20,0.45);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal-box{
+    background:var(--surface);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+    padding:20px;
+    width:100%;
+    max-width:300px;
+  }
+  .modal-title{
+    font-family:var(--font-display);
+    font-size:16px;
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .modal-sub{
+    font-size:12px;
+    font-weight:600;
+    color:#4b4b4b;
+    margin:0 0 14px;
+    line-height:1.4;
+  }
+  .modal-date-label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#4b4b4b;
+    margin:0 0 5px;
+  }
+  .modal-date-input{
+    width:100%;
+    font-family:var(--font-mono);
+    font-size:14px;
+    font-weight:700;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    padding:9px 10px;
+    margin-bottom:14px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .modal-actions{
+    display:flex;
+    gap:8px;
+  }
+  .modal-btn{
+    flex:1;
+    font-family:var(--font-display);
+    font-size:12px;
+    text-transform:uppercase;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    padding:9px 6px;
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .modal-btn:hover{ transform:translate(-1px,-1px); box-shadow:3.5px 3.5px 0 var(--ink); }
+  .modal-btn-cancel{ background:#fff; }
+  .modal-btn-confirm{ background:var(--purple); color:#fff; }
 </style>
 </head>
 <body>
@@ -745,13 +851,15 @@
       <div class="chart-card">
         <div class="week-nav">
           <button class="week-nav-btn" id="prevWeekBtn">◀</button>
-          <span class="week-nav-label" id="weekNavLabel">--</span>
+          <span class="week-nav-label clickable" id="weekNavLabel" title="Klik untuk pilih tanggal">--</span>
           <button class="week-nav-btn" id="nextWeekBtn">▶</button>
         </div>
         <p class="chart-title">Progres mingguan</p>
         <p class="chart-sub">Persentase kegiatan selesai per hari</p>
-        <div class="chart-bars" id="chartBars"></div>
-        <div class="chart-labels" id="chartLabels"></div>
+        <div class="chart-scroll">
+          <div class="chart-bars" id="chartBars"></div>
+          <div class="chart-labels" id="chartLabels"></div>
+        </div>
         <div class="chart-legend">
           <div class="legend-item"><span class="legend-swatch" style="background:var(--mint);"></span>Hari lain</div>
           <div class="legend-item"><span class="legend-swatch" style="background:var(--pink);"></span>Hari ini</div>
@@ -761,11 +869,29 @@
     </div>
 
     <p class="footer-note">kamu keren, jangan lupa istirahat ✨</p>
+    <div class="reset-all-wrap">
+      <button class="reset-all-btn" id="resetAllBtn">reset semua data (semua hari &amp; minggu)</button>
+    </div>
   </div>
 
   <div class="toast" id="toast">
     <span class="toast-msg" id="toastMsg"></span>
     <button class="toast-undo" id="toastUndoBtn">Urungkan</button>
+  </div>
+
+  <div class="modal-backdrop" id="dateModalBackdrop">
+    <div class="modal-box">
+      <p class="modal-title">Pilih rentang tanggal</p>
+      <p class="modal-sub">Rentang tanggal ini akan ditampilkan di grafik.</p>
+      <label class="modal-date-label" for="dateModalInputFrom">Dari</label>
+      <input type="date" id="dateModalInputFrom" class="modal-date-input">
+      <label class="modal-date-label" for="dateModalInputTo">Sampai</label>
+      <input type="date" id="dateModalInputTo" class="modal-date-input">
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="dateModalCancelBtn">Batal</button>
+        <button class="modal-btn modal-btn-confirm" id="dateModalConfirmBtn">Tampilkan</button>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -820,6 +946,11 @@
   const readonlyBanner = document.getElementById('readonlyBanner');
   const readonlyBackBtn = document.getElementById('readonlyBackBtn');
   const addCard = document.getElementById('addCard');
+  const dateModalBackdrop = document.getElementById('dateModalBackdrop');
+  const dateModalInputFrom = document.getElementById('dateModalInputFrom');
+  const dateModalInputTo = document.getElementById('dateModalInputTo');
+  const dateModalConfirmBtn = document.getElementById('dateModalConfirmBtn');
+  const dateModalCancelBtn = document.getElementById('dateModalCancelBtn');
 
   let pendingUndo = null;
   let toastTimer = null;
@@ -880,6 +1011,38 @@
     }catch(e){ /* ignore, memory fallback already set */ }
   }
 
+  async function storageDelete(key){
+    delete memoryStore[key];
+    try{
+      if(window.storage && window.storage.delete){
+        await window.storage.delete(key, false);
+        return;
+      }
+    }catch(e){ /* ignore, fall through to localStorage */ }
+    try{
+      localStorage.removeItem(key);
+    }catch(e){ /* ignore */ }
+  }
+
+  // Finds every stored key starting with `prefix`, across window.storage, localStorage, and the memory fallback.
+  async function storageListKeys(prefix){
+    const keys = new Set();
+    try{
+      if(window.storage && window.storage.list){
+        const res = await window.storage.list(prefix, false);
+        if(res && res.keys) res.keys.forEach(k => keys.add(k));
+      }
+    }catch(e){ /* ignore */ }
+    try{
+      for(let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i);
+        if(k && k.indexOf(prefix) === 0) keys.add(k);
+      }
+    }catch(e){ /* ignore */ }
+    Object.keys(memoryStore).forEach(k => { if(k.indexOf(prefix) === 0) keys.add(k); });
+    return Array.from(keys);
+  }
+
   function taskKey(day){ return 'jadwal-tasks:' + day; } // legacy key (pre-weekly-reset)
   function tplKey(day){ return 'jadwal-tpl:' + day; }
   function doneKey(weekKey, day){ return 'jadwal-done:' + weekKey + ':' + day; }
@@ -910,6 +1073,20 @@
     const sameMonth = monday.getMonth() === sunday.getMonth();
     const left = monday.getDate() + (sameMonth ? '' : ' ' + bulan[monday.getMonth()]);
     const right = sunday.getDate() + ' ' + bulan[sunday.getMonth()] + ' ' + sunday.getFullYear();
+    return left + ' - ' + right;
+  }
+
+  function addDays(d, n){
+    const r = new Date(d);
+    r.setDate(r.getDate() + n);
+    return r;
+  }
+
+  function rangeLabel(start, end){
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+    const left = start.getDate() + (sameMonth ? '' : ' ' + bulan[start.getMonth()]);
+    const right = end.getDate() + ' ' + bulan[end.getMonth()] + ' ' + end.getFullYear();
     return left + ' - ' + right;
   }
 
@@ -1127,6 +1304,39 @@
     await saveDoneIds(jadwalWeekKey, activeDay, []);
   }
 
+  async function resetAllData(){
+    const sure = confirm('Reset SEMUA data jadwal? Ini akan menghapus kegiatan di semua hari dan semua minggu (termasuk riwayat & progres). Tindakan ini tidak bisa dibatalkan.');
+    if(!sure) return;
+    const reallySure = confirm('Yakin banget? Semua data akan hilang permanen dan tidak bisa diurungkan.');
+    if(!reallySure) return;
+
+    const prefixes = ['jadwal-tpl:', 'jadwal-tasks:', 'jadwal-done:'];
+    for(const prefix of prefixes){
+      const keys = await storageListKeys(prefix);
+      for(const key of keys){ await storageDelete(key); }
+    }
+    // belt-and-suspenders: explicitly clear each day's known keys even if list() isn't supported
+    for(const d of DAYS){
+      await storageDelete(tplKey(d.key));
+      await storageDelete(taskKey(d.key));
+    }
+
+    jadwalWeekKey = currentWeekKey();
+    activeTemplate = [];
+    tasks = [];
+    copyPanel.style.display = 'none';
+    renderTasks();
+
+    chartRangeStart = getMonday(new Date());
+    chartRangeEnd = addDays(chartRangeStart, 6);
+    if(pageGrafik.classList.contains('active')){
+      await renderChart();
+    }
+
+    hideToast();
+    alert('Semua data sudah direset. ✨');
+  }
+
   function renderCopyPanel(){
     copyDaysEl.innerHTML = '';
     DAYS.filter(d=>d.key!==activeDay).forEach(d=>{
@@ -1187,26 +1397,31 @@
     renderTasks();
   }
 
-  let chartWeekKey = currentWeekKey();
+  let chartRangeStart = getMonday(new Date());
+  let chartRangeEnd = addDays(chartRangeStart, 6);
 
   async function renderChart(){
     chartBarsEl.innerHTML = '';
     chartLabelsEl.innerHTML = '';
-    weekNavLabelEl.textContent = weekLabel(chartWeekKey);
-    const isCurrentWeek = chartWeekKey === currentWeekKey();
-    nextWeekBtn.disabled = isCurrentWeek;
+    weekNavLabelEl.textContent = rangeLabel(chartRangeStart, chartRangeEnd);
 
-    const results = await Promise.all(DAYS.map(d => loadDayForWeek(chartWeekKey, d.key)));
+    const todayStr = toDateInputValue(new Date());
+    const rangeDays = Math.round((chartRangeEnd - chartRangeStart) / 86400000) + 1;
+    const dates = [];
+    for(let i = 0; i < rangeDays; i++){ dates.push(addDays(chartRangeStart, i)); }
+
+    nextWeekBtn.disabled = toDateInputValue(chartRangeEnd) >= todayStr;
+
+    const results = await Promise.all(dates.map(dt => loadDayForWeek(weekKeyFromDate(dt), JS_DAY_TO_KEY[dt.getDay()])));
 
     let grandTotal = 0, grandDone = 0, dayCountWithData = 0, pctSum = 0;
-    const todayKey = JS_DAY_TO_KEY[new Date().getDay()];
 
-    DAYS.forEach((d, i)=>{
+    dates.forEach((dt, i)=>{
       const list = results[i] ? results[i].view : [];
       const total = list.length;
       const done = list.filter(t=>t.done).length;
       const pct = total === 0 ? 0 : Math.round((done/total)*100);
-      const isToday = isCurrentWeek && d.key === todayKey;
+      const isToday = toDateInputValue(dt) === todayStr;
 
       if(total > 0){
         grandTotal += total;
@@ -1233,7 +1448,7 @@
 
       const label = document.createElement('div');
       label.className = 'chart-col-label' + (isToday ? ' today' : '');
-      label.textContent = d.short;
+      label.textContent = DAYS.find(d => d.key === JS_DAY_TO_KEY[dt.getDay()]).short;
       chartLabelsEl.appendChild(label);
     });
 
@@ -1249,7 +1464,8 @@
     navJadwal.classList.toggle('active', isJadwal);
     navGrafik.classList.toggle('active', !isJadwal);
     if(!isJadwal){
-      chartWeekKey = currentWeekKey();
+      chartRangeStart = getMonday(new Date());
+      chartRangeEnd = addDays(chartRangeStart, 6);
       renderChart();
     }
   }
@@ -1264,6 +1480,7 @@
       if(e.key === 'Enter') addTask();
     });
     clearBtn.addEventListener('click', clearAll);
+    document.getElementById('resetAllBtn').addEventListener('click', resetAllData);
     copyBtn.addEventListener('click', ()=>{
       if(tasks.length === 0) return;
       copyPanel.style.display = copyPanel.style.display === 'none' ? 'block' : 'none';
@@ -1271,16 +1488,16 @@
     navJadwal.addEventListener('click', ()=> showPage('jadwal'));
     navGrafik.addEventListener('click', ()=> showPage('grafik'));
     prevWeekBtn.addEventListener('click', ()=>{
-      const d = new Date(chartWeekKey + 'T00:00:00');
-      d.setDate(d.getDate() - 7);
-      chartWeekKey = weekKeyFromDate(d);
+      const rangeDays = Math.round((chartRangeEnd - chartRangeStart) / 86400000) + 1;
+      chartRangeStart = addDays(chartRangeStart, -rangeDays);
+      chartRangeEnd = addDays(chartRangeEnd, -rangeDays);
       renderChart();
     });
     nextWeekBtn.addEventListener('click', ()=>{
-      if(chartWeekKey === currentWeekKey()) return;
-      const d = new Date(chartWeekKey + 'T00:00:00');
-      d.setDate(d.getDate() + 7);
-      chartWeekKey = weekKeyFromDate(d);
+      if(nextWeekBtn.disabled) return;
+      const rangeDays = Math.round((chartRangeEnd - chartRangeStart) / 86400000) + 1;
+      chartRangeStart = addDays(chartRangeStart, rangeDays);
+      chartRangeEnd = addDays(chartRangeEnd, rangeDays);
       renderChart();
     });
     prevWeekBtnJadwal.addEventListener('click', async ()=>{
@@ -1300,6 +1517,42 @@
       jadwalWeekKey = currentWeekKey();
       await switchDay(activeDay);
     });
+
+    weekNavLabelEl.addEventListener('click', openDateModal);
+    dateModalCancelBtn.addEventListener('click', closeDateModal);
+    dateModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dateModalBackdrop) closeDateModal();
+    });
+    dateModalConfirmBtn.addEventListener('click', ()=>{
+      if(!dateModalInputFrom.value || !dateModalInputTo.value) return;
+      let from = new Date(dateModalInputFrom.value + 'T00:00:00');
+      let to = new Date(dateModalInputTo.value + 'T00:00:00');
+      if(from > to){ const tmp = from; from = to; to = tmp; } // swap if entered backwards
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      if(to > today) to = today; // can't view the future
+      if(from > to) from = to;
+      chartRangeStart = from;
+      chartRangeEnd = to;
+      closeDateModal();
+      renderChart();
+    });
+  }
+
+  function openDateModal(){
+    dateModalInputFrom.value = toDateInputValue(chartRangeStart);
+    dateModalInputTo.value = toDateInputValue(chartRangeEnd);
+    dateModalInputFrom.max = toDateInputValue(new Date());
+    dateModalInputTo.max = toDateInputValue(new Date());
+    dateModalBackdrop.classList.add('open');
+  }
+
+  function closeDateModal(){
+    dateModalBackdrop.classList.remove('open');
+  }
+
+  function toDateInputValue(d){
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
   }
 
   init();
