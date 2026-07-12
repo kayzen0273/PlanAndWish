@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jadwal Harianku</title>
+<style>
+  :root{
+    --bg:#FFD9EC;
+    --surface:#FFFFFF;
+    --ink:#171717;
+    --pink:#FF2D78;
+    --yellow:#FFDD33;
+    --purple:#A78BFA;
+    --mint:#5EEAD4;
+    --shadow-off: 4px;
+    --font-display:'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-body:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono:'Courier New', Courier, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(255,255,255,.5) 0, rgba(255,255,255,0) 22%),
+      radial-gradient(circle at 92% 85%, rgba(255,255,255,.4) 0, rgba(255,255,255,0) 20%),
+      var(--bg);
+    font-family:var(--font-body);
+    color:var(--ink);
+    padding:28px 16px 60px;
+  }
+
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header-card{
+    position:relative;
+    background:var(--surface);
+    border:3px solid var(--ink);
+    box-shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+    border-radius:18px;
+    padding:22px 20px 18px;
+    margin-bottom:22px;
+  }
+  .badge{
+    position:absolute;
+    top:-16px;
+    right:-10px;
+    background:var(--yellow);
+    border:3px solid var(--ink);
+    border-radius:50%;
+    width:78px;
+    height:78px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-family:var(--font-display);
+    font-size:10px;
+    line-height:1.15;
+    transform:rotate(9deg);
+    box-shadow: 3px 3px 0 var(--ink);
+    padding:6px;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-size:28px;
+    letter-spacing:-0.5px;
+    text-transform:uppercase;
+    margin:0 0 4px;
+    line-height:1.05;
+  }
+  .subtitle{
+    font-size:13.5px;
+    font-weight:600;
+    color:#4b4b4b;
+    margin:0;
+  }
+  .today-pill{
+    display:inline-block;
+    margin-top:12px;
+    background:var(--purple);
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    padding:4px 12px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+  }
+  .notify-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin:12px 8px 0 0;
+    background:var(--mint);
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    padding:6px 14px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease, background .1s ease;
+  }
+  .notify-btn:hover{ transform:translate(-1px,-1px); box-shadow:3.5px 3.5px 0 var(--ink); }
+  .notify-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink); }
+  .notify-btn.active{ background:var(--purple); color:#fff; cursor:default; }
+  .notify-btn.active:hover{ transform:none; box-shadow:2.5px 2.5px 0 var(--ink); }
+  .notify-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .notify-btn:disabled:hover{ transform:none; box-shadow:2.5px 2.5px 0 var(--ink); }
+  .notify-hint{
+    margin:8px 0 0;
+    font-size:11px;
+    font-weight:600;
+    color:#6b6b6b;
+    line-height:1.4;
+  }
+
+  /* ---------- DAY TABS ---------- */
+  .day-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .day-tab{
+    flex:1 1 auto;
+    min-width:40px;
+    text-align:center;
+    background:var(--surface);
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    padding:9px 4px;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12.5px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transform:rotate(-2deg);
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    user-select:none;
+  }
+  .day-tab:nth-child(even){ transform:rotate(2deg); }
+  .day-tab:hover{ transform:translate(-1px,-1px) rotate(0deg); box-shadow:4px 4px 0 var(--ink); }
+  .day-tab.active{
+    background:var(--pink);
+    color:#fff;
+    transform:translate(-2px,-2px) rotate(0deg);
+    box-shadow:6px 6px 0 var(--ink);
+  }
+
+  /* ---------- PROGRESS ---------- */
+  .progress-card{
+    background:var(--surface);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    padding:14px 16px;
+    margin-bottom:18px;
+    box-shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:8px;
+  }
+  .progress-label{
+    font-family:var(--font-display);
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .progress-count{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:13px;
+    background:var(--yellow);
+    border:2px solid var(--ink);
+    border-radius:6px;
+    padding:1px 7px;
+  }
+  .progress-track{
+    height:16px;
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    background:repeating-linear-gradient(45deg,#f3f3f3,#f3f3f3 6px,#e9e9e9 6px,#e9e9e9 12px);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--mint);
+    border-right:2.5px solid var(--ink);
+    transition:width .25s ease;
+  }
+
+  /* ---------- ADD FORM ---------- */
+  .add-card{
+    background:var(--surface);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:20px;
+    box-shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+  }
+  .add-title{
+    font-family:var(--font-display);
+    font-size:13px;
+    text-transform:uppercase;
+    margin:0 0 10px;
+  }
+  .add-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  input[type="time"], input[type="text"]{
+    font-family:var(--font-body);
+    font-size:14px;
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    padding:9px 10px;
+    background:#fff;
+    outline:none;
+  }
+  input[type="time"]{ width:112px; font-family:var(--font-mono); font-weight:700; flex-shrink:0; }
+  input[type="text"]{ flex:1; min-width:0; }
+  input:focus{ box-shadow:3px 3px 0 var(--purple); }
+
+  .btn{
+    font-family:var(--font-display);
+    text-transform:uppercase;
+    font-size:13px;
+    letter-spacing:.3px;
+    border:2.5px solid var(--ink);
+    border-radius:9px;
+    padding:10px 14px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease;
+    background:var(--pink);
+    color:#fff;
+    width:100%;
+  }
+  .btn:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink); }
+
+  /* ---------- TASK LIST ---------- */
+  .list-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin:0 0 10px 4px;
+  }
+  .list-title{
+    font-family:var(--font-display);
+    font-size:13px;
+    text-transform:uppercase;
+    margin:0;
+  }
+  .copy-btn{
+    flex-shrink:0;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:700;
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    padding:6px 10px;
+    background:var(--purple);
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .copy-btn:hover{ transform:translate(-1px,-1px); box-shadow:3.5px 3.5px 0 var(--ink); }
+  .copy-btn:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transform:none;
+  }
+  .list-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .calendar-btn{ background:var(--mint); }
+  .copy-panel{
+    background:var(--surface);
+    border:2.5px dashed var(--ink);
+    border-radius:14px;
+    padding:12px 14px;
+    margin:0 0 16px;
+  }
+  .copy-panel-label{
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    margin:0 0 9px;
+    color:#4b4b4b;
+  }
+  .copy-days{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .copy-day-chip{
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    border:2px solid var(--ink);
+    border-radius:8px;
+    padding:6px 11px;
+    background:var(--yellow);
+    cursor:pointer;
+    box-shadow:2px 2px 0 var(--ink);
+    transition:transform .1s ease, background .1s ease, color .1s ease;
+  }
+  .copy-day-chip:hover{ background:var(--pink); color:#fff; transform:translate(-1px,-1px); }
+  .task{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--surface);
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    padding:11px 12px;
+    margin-bottom:10px;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:background .15s ease, transform .1s ease;
+  }
+  .task.done{ background:var(--mint); }
+  .check{
+    flex-shrink:0;
+    width:28px;
+    height:28px;
+    border:2.5px solid var(--ink);
+    border-radius:7px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-weight:900;
+    font-size:15px;
+    user-select:none;
+  }
+  .task.done .check{ background:var(--ink); color:var(--mint); transform:rotate(-6deg); }
+  .task-time{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12.5px;
+    background:var(--yellow);
+    border:2px solid var(--ink);
+    border-radius:6px;
+    padding:2px 6px;
+    flex-shrink:0;
+  }
+  .task.done .task-time{ background:#fff; }
+  .task-text{
+    flex:1;
+    min-width:0;
+    font-size:14px;
+    font-weight:600;
+    word-break:break-word;
+  }
+  .task.done .task-text{ text-decoration:line-through; opacity:.6; }
+  .del-btn{
+    flex-shrink:0;
+    width:26px;
+    height:26px;
+    border:2px solid var(--ink);
+    border-radius:6px;
+    background:#fff;
+    cursor:pointer;
+    font-size:13px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+  }
+  .del-btn:hover{ background:var(--pink); color:#fff; }
+
+  .empty-state{
+    text-align:center;
+    padding:26px 16px;
+    border:2.5px dashed var(--ink);
+    border-radius:14px;
+    font-size:13.5px;
+    font-weight:600;
+    color:#555;
+    background:rgba(255,255,255,.5);
+  }
+
+  .clear-link{
+    display:block;
+    text-align:center;
+    margin-top:14px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    color:#8a3b57;
+    background:none;
+    border:none;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .footer-note{
+    text-align:center;
+    margin-top:28px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    color:#7a3f56;
+  }
+
+  /* ---------- TOAST / UNDO ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:22px;
+    transform:translate(-50%, 12px);
+    max-width:440px;
+    width:calc(100% - 32px);
+    background:var(--ink);
+    color:#fff;
+    border:3px solid var(--ink);
+    border-radius:14px;
+    box-shadow:5px 5px 0 var(--pink);
+    padding:12px 12px 12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    z-index:999;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translate(-50%, 0);
+    pointer-events:auto;
+  }
+  .toast-msg{
+    font-size:13px;
+    font-weight:700;
+    line-height:1.3;
+  }
+  .toast-undo{
+    flex-shrink:0;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:12.5px;
+    text-transform:uppercase;
+    background:var(--yellow);
+    color:var(--ink);
+    border:2.5px solid #fff;
+    border-radius:8px;
+    padding:7px 12px;
+    cursor:pointer;
+  }
+  .toast-undo:hover{ background:var(--mint); }
+
+  @media (max-width:360px){
+    h1{ font-size:23px; }
+    .badge{ width:64px; height:64px; font-size:9px; top:-12px; right:-8px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="header-card">
+      <div class="badge">✨ khusus buat kamu</div>
+      <h1>Jadwal Harianku</h1>
+      <p class="subtitle">Atur waktumu hari ini, girl! Simpel & bebas berantakan~</p>
+      <span class="today-pill" id="todayPill">--</span>
+      <br>
+      <button class="notify-btn" id="notifyBtn" type="button">🔔 Aktifkan pengingat</button>
+      <p class="notify-hint" id="notifyHint">Nyalain notifikasi instan (perlu tab ini kebuka, belum jalan di iPhone/Safari). Buat pengingat asli di layar kunci HP, pakai tombol 📅 Ekspor Kalender di bawah.</p>
+    </div>
+
+    <div class="day-tabs" id="dayTabs"></div>
+
+    <div class="progress-card">
+      <div class="progress-top">
+        <span class="progress-label">Progres hari ini</span>
+        <span class="progress-count" id="progressCount">0/0</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="add-card">
+      <p class="add-title">+ Tambah kegiatan</p>
+      <div class="add-row">
+        <input type="time" id="timeInput" value="08:00">
+        <input type="text" id="textInput" placeholder="Nama kegiatan...">
+      </div>
+      <button class="btn" id="addBtn">Tambah ke jadwal</button>
+    </div>
+
+    <div class="list-header">
+      <p class="list-title" id="listTitle">Kegiatan</p>
+      <div class="list-actions">
+        <button class="copy-btn calendar-btn" id="calendarBtn" type="button" title="Unduh file .ics biar semua kegiatan hari ini masuk ke Kalender HP-mu (Google/Apple Calendar) lengkap dengan notifikasi asli tiap minggu, walau halaman ini ditutup.">📅 Ekspor Kalender</button>
+        <button class="copy-btn" id="copyBtn">📋 Salin ke hari lain</button>
+      </div>
+    </div>
+
+    <div class="copy-panel" id="copyPanel" style="display:none;">
+      <p class="copy-panel-label">Pilih hari tujuan:</p>
+      <div class="copy-days" id="copyDays"></div>
+    </div>
+
+    <div id="taskList"></div>
+
+    <button class="clear-link" id="clearBtn" style="display:none;">hapus semua kegiatan hari ini</button>
+
+    <p class="footer-note">kamu keren, jangan lupa istirahat ✨</p>
+  </div>
+
+  <div class="toast" id="toast">
+    <span class="toast-msg" id="toastMsg"></span>
+    <button class="toast-undo" id="toastUndoBtn">Urungkan</button>
+  </div>
+
+<script>
+(function(){
+  const DAYS = [
+    {key:'senin', short:'Sen'},
+    {key:'selasa', short:'Sel'},
+    {key:'rabu', short:'Rab'},
+    {key:'kamis', short:'Kam'},
+    {key:'jumat', short:'Jum'},
+    {key:'sabtu', short:'Sab'},
+    {key:'minggu', short:'Min'}
+  ];
+  const JS_DAY_TO_KEY = ['minggu','senin','selasa','rabu','kamis','jumat','sabtu'];
+
+  let memoryStore = {}; // fallback if window.storage unavailable
+  let activeDay = JS_DAY_TO_KEY[new Date().getDay()];
+  let tasks = [];
+
+  const dayTabsEl = document.getElementById('dayTabs');
+  const taskListEl = document.getElementById('taskList');
+  const progressFillEl = document.getElementById('progressFill');
+  const progressCountEl = document.getElementById('progressCount');
+  const listTitleEl = document.getElementById('listTitle');
+  const clearBtn = document.getElementById('clearBtn');
+  const todayPill = document.getElementById('todayPill');
+  const copyBtn = document.getElementById('copyBtn');
+  const copyPanel = document.getElementById('copyPanel');
+  const copyDaysEl = document.getElementById('copyDays');
+  const toastEl = document.getElementById('toast');
+  const toastMsgEl = document.getElementById('toastMsg');
+  const toastUndoBtn = document.getElementById('toastUndoBtn');
+  const notifyBtn = document.getElementById('notifyBtn');
+  const notifyHint = document.getElementById('notifyHint');
+  const calendarBtn = document.getElementById('calendarBtn');
+
+  let pendingUndo = null;
+  let toastTimer = null;
+
+  let notificationsEnabled = false;
+  let notifiedToday = new Set();
+  let currentNotifyDate = null;
+  let notifyTimer = null;
+  let swRegistration = null;
+
+  async function initServiceWorker(){
+    if(!('serviceWorker' in navigator)) return;
+    try{
+      swRegistration = await navigator.serviceWorker.register('./sw.js');
+    }catch(e){
+      swRegistration = null; // fallback ke Notification biasa kalau sw.js nggak ketemu/nggak di-hosting via server
+    }
+  }
+
+  function showToast(message, undoFn){
+    clearTimeout(toastTimer);
+    toastMsgEl.textContent = message;
+    pendingUndo = undoFn;
+    toastEl.classList.add('show');
+    toastTimer = setTimeout(hideToast, 6000);
+  }
+
+  function hideToast(){
+    toastEl.classList.remove('show');
+    pendingUndo = null;
+    clearTimeout(toastTimer);
+  }
+
+  toastUndoBtn.addEventListener('click', async ()=>{
+    if(pendingUndo){
+      const fn = pendingUndo;
+      hideToast();
+      await fn();
+    }
+  });
+
+  function updateNotifyUI(){
+    if(!('Notification' in window)){
+      notifyBtn.textContent = '🔕 Notifikasi tidak didukung';
+      notifyBtn.disabled = true;
+      notifyHint.textContent = 'Browser ini belum mendukung notifikasi instan. Pakai tombol 📅 Ekspor Kalender buat pengingat asli di HP.';
+      return;
+    }
+    if(Notification.permission === 'granted'){
+      notifyBtn.textContent = '🔔 Pengingat aktif';
+      notifyBtn.classList.add('active');
+      notifyBtn.disabled = true;
+      notifyHint.textContent = 'Notifikasi instan aktif selama tab ini kebuka. Buat pengingat yang tetap jalan walau tab ditutup, pakai 📅 Ekspor Kalender.';
+    } else if(Notification.permission === 'denied'){
+      notifyBtn.textContent = '🔕 Notifikasi diblokir';
+      notifyBtn.disabled = true;
+      notifyHint.textContent = 'Izin notifikasi diblokir di browser. Pakai tombol 📅 Ekspor Kalender aja buat pengingat asli di HP.';
+    } else {
+      notifyBtn.textContent = '🔔 Aktifkan pengingat';
+      notifyBtn.classList.remove('active');
+      notifyBtn.disabled = false;
+      notifyHint.textContent = 'Nyalain notifikasi instan (perlu tab ini kebuka, belum jalan di iPhone/Safari). Buat pengingat asli di layar kunci HP, pakai tombol 📅 Ekspor Kalender di bawah.';
+    }
+  }
+
+  async function requestNotifications(){
+    if(!('Notification' in window)){
+      updateNotifyUI();
+      return;
+    }
+    try{
+      const perm = await Notification.requestPermission();
+      updateNotifyUI();
+      if(perm === 'granted'){
+        notificationsEnabled = true;
+        startNotificationChecker();
+        showToast('Pengingat kegiatan diaktifkan 🔔');
+      }
+    }catch(e){ /* ignore */ }
+  }
+
+  function startNotificationChecker(){
+    if(notifyTimer) clearInterval(notifyTimer);
+    checkAndNotify();
+    notifyTimer = setInterval(checkAndNotify, 20000);
+  }
+
+  async function checkAndNotify(){
+    if(!notificationsEnabled) return;
+    const now = new Date();
+    const dateStr = now.toDateString();
+    if(currentNotifyDate !== dateStr){
+      notifiedToday.clear();
+      currentNotifyDate = dateStr;
+    }
+    const dayKey = JS_DAY_TO_KEY[now.getDay()];
+    const nowTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+    const list = dayKey === activeDay ? tasks : (await loadDay(dayKey)) || [];
+
+    list.forEach(t=>{
+      if(t.done || t.time !== nowTime) return;
+      const key = dateStr + '|' + t.time + '|' + t.text;
+      if(notifiedToday.has(key)) return;
+      notifiedToday.add(key);
+      fireNotification(t);
+    });
+  }
+
+  function fireNotification(t){
+    const title = '⏰ Waktunya: ' + t.text;
+    const options = {
+      body: 'Sesuai jadwal jam ' + t.time,
+      tag: 'jadwal-' + t.time + '-' + t.text
+    };
+    try{
+      if(swRegistration){
+        swRegistration.showNotification(title, options);
+      } else {
+        new Notification(title, options);
+      }
+    }catch(e){
+      try{ new Notification(title, options); }catch(e2){ /* ignore */ }
+    }
+  }
+
+  const BYDAY_MAP = {senin:'MO', selasa:'TU', rabu:'WE', kamis:'TH', jumat:'FR', sabtu:'SA', minggu:'SU'};
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+
+  function formatICSDate(d){
+    return d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
+  }
+
+  function escapeICS(text){
+    return String(text).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  }
+
+  function nextDateForDay(dayKey, hh, mm){
+    const targetIdx = JS_DAY_TO_KEY.indexOf(dayKey);
+    const now = new Date();
+    const diff = (targetIdx - now.getDay() + 7) % 7;
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff, hh, mm, 0);
+  }
+
+  function buildICS(dayKey, list){
+    const dayLabel = DAYS.find(d=>d.key===dayKey).short;
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Jadwal Harianku//ID',
+      'CALSCALE:GREGORIAN'
+    ];
+    list.forEach((t, idx)=>{
+      const [hh, mm] = t.time.split(':').map(Number);
+      const start = nextDateForDay(dayKey, hh, mm);
+      const end = new Date(start.getTime() + 30*60000);
+      const uid = 'jadwal-' + dayKey + '-' + t.time.replace(':','') + '-' + idx + '@jadwal-harianku';
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:' + uid);
+      lines.push('DTSTAMP:' + formatICSDate(new Date()) + 'Z');
+      lines.push('DTSTART:' + formatICSDate(start));
+      lines.push('DTEND:' + formatICSDate(end));
+      lines.push('RRULE:FREQ=WEEKLY;BYDAY=' + BYDAY_MAP[dayKey]);
+      lines.push('SUMMARY:' + escapeICS(t.text));
+      lines.push('DESCRIPTION:' + escapeICS('Kegiatan hari ' + dayLabel + ' jam ' + t.time));
+      lines.push('BEGIN:VALARM');
+      lines.push('ACTION:DISPLAY');
+      lines.push('DESCRIPTION:' + escapeICS('Waktunya: ' + t.text));
+      lines.push('TRIGGER:-PT0M');
+      lines.push('END:VALARM');
+      lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  function downloadICS(dayKey, list){
+    if(list.length === 0){
+      alert('Belum ada kegiatan buat hari ini.');
+      return;
+    }
+    const ics = buildICS(dayKey, list);
+    const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'jadwal-' + dayKey + '.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=> URL.revokeObjectURL(url), 2000);
+  }
+
+  function todayLabel(){
+    const names = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const d = new Date();
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    return names[d.getDay()] + ', ' + d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  async function storageGet(key){
+    try{
+      if(window.storage && window.storage.get){
+        const res = await window.storage.get(key, false);
+        return res ? res.value : null;
+      }
+    }catch(e){ /* key not found or storage unavailable */ }
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  }
+
+  async function storageSet(key, value){
+    memoryStore[key] = value;
+    try{
+      if(window.storage && window.storage.set){
+        await window.storage.set(key, value, false);
+      }
+    }catch(e){ /* ignore, memory fallback already set */ }
+  }
+
+  function taskKey(day){ return 'jadwal-tasks:' + day; }
+
+  async function loadDay(day){
+    const raw = await storageGet(taskKey(day));
+    if(raw){
+      try{ return JSON.parse(raw); }catch(e){ return []; }
+    }
+    return null;
+  }
+
+  async function saveDay(day, list){
+    await storageSet(taskKey(day), JSON.stringify(list));
+  }
+
+  function sortTasks(list){
+    return list.slice().sort((a,b)=> a.time.localeCompare(b.time));
+  }
+
+  function renderTabs(){
+    dayTabsEl.innerHTML = '';
+    DAYS.forEach(d=>{
+      const el = document.createElement('div');
+      el.className = 'day-tab' + (d.key===activeDay ? ' active' : '');
+      el.textContent = d.short;
+      el.addEventListener('click', ()=> switchDay(d.key));
+      dayTabsEl.appendChild(el);
+    });
+  }
+
+  function renderTasks(){
+    taskListEl.innerHTML = '';
+    if(tasks.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.textContent = 'Belum ada jadwal buat hari ini. Yuk tambahin! 📝';
+      taskListEl.appendChild(empty);
+      clearBtn.style.display = 'none';
+    } else {
+      tasks.forEach((t, idx)=>{
+        const row = document.createElement('div');
+        row.className = 'task' + (t.done ? ' done' : '');
+
+        const check = document.createElement('div');
+        check.className = 'check';
+        check.textContent = t.done ? '✓' : '';
+        check.addEventListener('click', ()=> toggleTask(idx));
+
+        const time = document.createElement('span');
+        time.className = 'task-time';
+        time.textContent = t.time;
+
+        const text = document.createElement('span');
+        text.className = 'task-text';
+        text.textContent = t.text;
+
+        const del = document.createElement('button');
+        del.className = 'del-btn';
+        del.textContent = '✕';
+        del.addEventListener('click', ()=> deleteTask(idx));
+
+        row.appendChild(check);
+        row.appendChild(time);
+        row.appendChild(text);
+        row.appendChild(del);
+        taskListEl.appendChild(row);
+      });
+      clearBtn.style.display = 'block';
+    }
+    copyBtn.disabled = tasks.length === 0;
+    calendarBtn.disabled = tasks.length === 0;
+    updateProgress();
+  }
+
+  function updateProgress(){
+    const total = tasks.length;
+    const done = tasks.filter(t=>t.done).length;
+    const pct = total === 0 ? 0 : Math.round((done/total)*100);
+    progressFillEl.style.width = pct + '%';
+    progressCountEl.textContent = done + '/' + total;
+  }
+
+  async function toggleTask(idx){
+    tasks[idx].done = !tasks[idx].done;
+    renderTasks();
+    await saveDay(activeDay, tasks);
+  }
+
+  async function deleteTask(idx){
+    const label = tasks[idx].text;
+    if(!confirm('Hapus kegiatan "' + label + '"?')) return;
+    tasks.splice(idx,1);
+    renderTasks();
+    await saveDay(activeDay, tasks);
+  }
+
+  async function addTask(){
+    const timeInput = document.getElementById('timeInput');
+    const textInput = document.getElementById('textInput');
+    const time = timeInput.value || '00:00';
+    const text = textInput.value.trim();
+    if(!text){
+      textInput.focus();
+      return;
+    }
+    tasks.push({time, text, done:false});
+    tasks = sortTasks(tasks);
+    textInput.value = '';
+    renderTasks();
+    await saveDay(activeDay, tasks);
+  }
+
+  async function clearAll(){
+    if(!confirm('Hapus semua kegiatan untuk hari ini?')) return;
+    tasks = [];
+    renderTasks();
+    await saveDay(activeDay, tasks);
+  }
+
+  function renderCopyPanel(){
+    copyDaysEl.innerHTML = '';
+    DAYS.filter(d=>d.key!==activeDay).forEach(d=>{
+      const chip = document.createElement('div');
+      chip.className = 'copy-day-chip';
+      chip.textContent = d.short;
+      chip.addEventListener('click', ()=> copyToDay(d.key, d.short));
+      copyDaysEl.appendChild(chip);
+    });
+  }
+
+  async function copyToDay(targetDay, targetLabel){
+    const existing = await loadDay(targetDay);
+    const hasExisting = existing && existing.length > 0;
+    const confirmMsg = hasExisting
+      ? 'Salin kegiatan ke hari ' + targetLabel + '? Jadwal yang sudah ada di hari itu akan ditimpa.'
+      : 'Salin semua kegiatan hari ini ke hari ' + targetLabel + '?';
+    if(!confirm(confirmMsg)) return;
+
+    const previousTasks = hasExisting ? existing : [];
+    const copied = tasks.map(t=> ({time:t.time, text:t.text, done:false}));
+    await saveDay(targetDay, sortTasks(copied));
+    copyPanel.style.display = 'none';
+
+    showToast('Disalin ke hari ' + targetLabel + ' ✨', async ()=>{
+      await saveDay(targetDay, previousTasks);
+      if(activeDay === targetDay){
+        tasks = sortTasks(previousTasks);
+        renderTasks();
+      }
+    });
+  }
+
+  async function switchDay(day){
+    activeDay = day;
+    renderTabs();
+    const label = DAYS.find(d=>d.key===day).short;
+    listTitleEl.textContent = 'Kegiatan · ' + label.toUpperCase();
+    copyPanel.style.display = 'none';
+    renderCopyPanel();
+    const loaded = await loadDay(day);
+    tasks = loaded ? sortTasks(loaded) : [];
+    renderTasks();
+  }
+
+  async function init(){
+    todayPill.textContent = todayLabel();
+    renderTabs();
+    await switchDay(activeDay);
+
+    document.getElementById('addBtn').addEventListener('click', addTask);
+    document.getElementById('textInput').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') addTask();
+    });
+    clearBtn.addEventListener('click', clearAll);
+    copyBtn.addEventListener('click', ()=>{
+      if(tasks.length === 0) return;
+      copyPanel.style.display = copyPanel.style.display === 'none' ? 'block' : 'none';
+    });
+
+    notifyBtn.addEventListener('click', requestNotifications);
+    updateNotifyUI();
+    if('Notification' in window && Notification.permission === 'granted'){
+      notificationsEnabled = true;
+      startNotificationChecker();
+    }
+    initServiceWorker();
+
+    calendarBtn.addEventListener('click', ()=> downloadICS(activeDay, tasks));
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
