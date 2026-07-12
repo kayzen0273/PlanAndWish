@@ -564,6 +564,10 @@
         return res ? res.value : null;
       }
     }catch(e){ /* key not found or storage unavailable */ }
+    try{
+      const val = localStorage.getItem(key);
+      if(val !== null) return val;
+    }catch(e){ /* localStorage unavailable */ }
     return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
   }
 
@@ -572,7 +576,11 @@
     try{
       if(window.storage && window.storage.set){
         await window.storage.set(key, value, false);
+        return;
       }
+    }catch(e){ /* ignore, fall through to localStorage */ }
+    try{
+      localStorage.setItem(key, value);
     }catch(e){ /* ignore, memory fallback already set */ }
   }
 
