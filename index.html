@@ -158,6 +158,7 @@
   .menu-card.card-jadwal{ background:var(--pink); transform:rotate(-1.6deg); }
   .menu-card.card-wishlist{ background:var(--purple); transform:rotate(1.6deg); }
   .menu-card.card-keuangan{ background:linear-gradient(135deg, var(--finblue), var(--sky) 85%); transform:rotate(-1.2deg); }
+  .menu-card.card-photobox{ background:linear-gradient(160deg, #2b2622 0%, #1a1816 75%); transform:rotate(1.3deg); }
 
   .menu-card:hover{ transform:translate(-4px,-5px) rotate(0deg); box-shadow:9px 9px 0 var(--ink); }
   .menu-card:active{ transform:translate(2px,2px) rotate(0deg); box-shadow:3px 3px 0 var(--ink); }
@@ -179,6 +180,7 @@
   }
   .card-wishlist .tab-label{ background:var(--mint-soft); }
   .card-keuangan .tab-label{ background:var(--sky-soft); }
+  .card-photobox .tab-label{ background:#f4b942; }
 
   .badge{
     position:absolute;
@@ -204,6 +206,7 @@
   .card-jadwal .badge{ background:var(--mint-soft); }
   .card-wishlist .badge{ background:var(--yellow); }
   .card-keuangan .badge{ background:var(--pink-soft); }
+  .card-photobox .badge{ background:#b23a30; color:#f2e8d5; }
 
   .card-icon{ font-size:30px; margin:16px 0 6px; }
 
@@ -501,6 +504,20 @@
         </div>
         <span class="cta">Buka →</span>
       </a>
+
+      <a class="menu-card card-photobox" href="#" onclick="openPage('photobox');return false;">
+        <span class="tab-label">📸 PHOTO BOX</span>
+        <span class="badge">JEPRET<br>YUK</span>
+        <span class="card-icon">🎞️</span>
+        <h2>Photo Box</h2>
+        <p>Studio foto instan dari kamera, tambahin stiker & bingkai, terus cetak jadi strip foto.</p>
+        <div class="tags">
+          <span>webcam</span>
+          <span>stiker</span>
+          <span>strip foto</span>
+        </div>
+        <span class="cta">Buka →</span>
+      </a>
     </nav>
 
     <footer>dibuat dengan 💛 <button type="button" id="logoutBtn" onclick="logout()">Keluar</button></footer>
@@ -519,6 +536,10 @@
 
   <div class="page-frame" id="page-wishlist">
     <iframe id="iframe-wishlist" title="Wishlist"></iframe>
+  </div>
+
+  <div class="page-frame" id="page-photobox">
+    <iframe id="iframe-photobox" title="Photo Box"></iframe>
   </div>
 
 
@@ -4658,8 +4679,9 @@
 </textarea>
 
 
+
   <script>
-    var PAGES = ['jadwal','keuangan','wishlist'];
+    var PAGES = ['jadwal','keuangan','wishlist','photobox'];
     var INVITE_CODE = '12345670';
     var SESSION_KEY = 'akugabungan_session_v1';
     var currentUser = null; // { uid, name }
@@ -4785,8 +4807,12 @@
       });
       var iframe = document.getElementById('iframe-' + name);
       if(!iframe.dataset.loaded){
-        var tpl = document.getElementById('tpl-' + name);
-        iframe.srcdoc = injectUser(tpl.value);
+        if(name === 'photobox'){
+          iframe.src = 'https://update-mocha-two.vercel.app/';
+        } else {
+          var tpl = document.getElementById('tpl-' + name);
+          iframe.srcdoc = injectUser(tpl.value);
+        }
         iframe.dataset.loaded = '1';
       }
       window.scrollTo(0,0);
