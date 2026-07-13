@@ -263,6 +263,116 @@
   :focus-visible{ outline:3px solid var(--sky); outline-offset:2px; }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  var SUPABASE_URL = 'https://rjxnjlkdmeavareqzwjj.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqeG5qbGtkbWVhdmFyZXF6d2pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4ODE3NTMsImV4cCI6MjA5OTQ1Nzc1M30.24pY4fSkU1uATouuDPpV0hIssHnQbF-Yual_O8wm5MI';
+
+  var sb = null;
+  try{
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }catch(e){ sb = null; }
+
+  async function get(key, shared){
+    if(!sb) throw new Error('supabase belum siap');
+    var s = !!shared;
+    var res = await sb.from('kv_store').select('value').eq('key', key).eq('shared', s).maybeSingle();
+    if(res.error) throw res.error;
+    if(!res.data) return null;
+    return { key: key, value: res.data.value, shared: s };
+  }
+
+  async function set(key, value, shared){
+    if(!sb) throw new Error('supabase belum siap');
+    var s = !!shared;
+    var res = await sb.from('kv_store')
+      .upsert({ key: key, shared: s, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key,shared' });
+    if(res.error) throw res.error;
+    return { key: key, value: value, shared: s };
+  }
+
+  window.authStorage = { get: get, set: set };
+})();
+</script>
+
+<style>
+  #page-menu{ display:none; }
+
+  #page-auth{ position:relative; z-index:1; max-width:420px; margin:60px auto; padding:0 20px; }
+
+  .auth-tabs{ display:flex; gap:10px; margin-bottom:18px; }
+  .auth-tab{
+    flex:1;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    padding:10px 14px;
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .auth-tab.active{ background:var(--purple); color:var(--paper); }
+
+  .auth-form{ display:flex; flex-direction:column; gap:14px; }
+  .auth-form label{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:13px;
+  }
+  .auth-form input{
+    font-family:var(--font-body);
+    font-size:15px;
+    padding:10px 12px;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .auth-submit{
+    margin-top:6px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    padding:12px;
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    background:var(--pink);
+    color:var(--paper);
+    box-shadow:4px 4px 0 var(--ink);
+    cursor:pointer;
+  }
+  .auth-submit:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+
+  .auth-error{ margin-top:14px; color:#D6284A; font-weight:700; font-family:var(--font-body); font-size:13.5px; }
+  .auth-loading{ margin-top:14px; color:var(--ink); opacity:.7; font-family:var(--font-body); font-size:13.5px; }
+
+  #userGreeting{
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:700;
+    opacity:.65;
+    margin:0 0 8px;
+  }
+  #logoutBtn{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    border-radius:999px;
+    padding:4px 12px;
+    cursor:pointer;
+    margin-left:8px;
+  }
+</style>
+
 <style>
 
   .page-frame{
@@ -283,6 +393,54 @@
 </style>
 </head>
 <body>
+
+  <div id="page-auth">
+    <div class="deco d1">🌸</div>
+    <div class="deco d2">⭐</div>
+    <div class="deco d5">🎀</div>
+    <div class="deco d6">💫</div>
+
+    <header style="margin-bottom:24px;">
+      <span class="tag">🔐 privat</span>
+      <h1 class="main-title" style="font-size:clamp(26px,7vw,36px);">Yuk <span class="hl">Masuk Dulu</span> ✨</h1>
+      <p class="tagline" style="font-size:17px;">biar datamu aman &amp; nggak campur sama orang lain</p>
+    </header>
+
+    <div class="auth-tabs">
+      <button type="button" id="authTabLogin" class="auth-tab active" onclick="switchAuthTab('login')">Masuk</button>
+      <button type="button" id="authTabRegister" class="auth-tab" onclick="switchAuthTab('register')">Daftar</button>
+    </div>
+
+    <form id="loginForm" class="auth-form" onsubmit="return handleLogin(event)">
+      <label>Nama
+        <input type="text" id="loginName" required autocomplete="username">
+      </label>
+      <label>Password
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="auth-submit">Masuk →</button>
+    </form>
+
+    <form id="registerForm" class="auth-form" style="display:none;" onsubmit="return handleRegister(event)">
+      <label>Nama
+        <input type="text" id="regName" required autocomplete="username">
+      </label>
+      <label>Password
+        <input type="password" id="regPassword" required autocomplete="new-password" minlength="4">
+      </label>
+      <label>Ulangi Password
+        <input type="password" id="regPassword2" required autocomplete="new-password" minlength="4">
+      </label>
+      <label>Kode Undangan
+        <input type="text" id="regInvite" required inputmode="numeric">
+      </label>
+      <button type="submit" class="auth-submit">Daftar →</button>
+    </form>
+
+    <p id="authError" class="auth-error" style="display:none;"></p>
+    <p id="authLoading" class="auth-loading" style="display:none;">Sebentar ya...</p>
+  </div>
+
   <div id="page-menu">
 
 
@@ -295,6 +453,7 @@
 
   <div class="wrap">
     <header>
+      <p id="userGreeting"></p>
       <span class="tag">✨ menu utama</span>
       <h1 class="main-title">Hai! Yuk <span class="hl">Pilih Menu</span> 👋</h1>
       <p class="tagline">jadwal harian, wishlist & keuangan, semua ada di sini</p>
@@ -344,7 +503,7 @@
       </a>
     </nav>
 
-    <footer>dibuat dengan 💛</footer>
+    <footer>dibuat dengan 💛 <button type="button" id="logoutBtn" onclick="logout()">Keluar</button></footer>
   </div>
 
 
@@ -1566,7 +1725,13 @@
     return names[d.getDay()] + ', ' + d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
   }
 
+  function nsKey(key){
+    var u = (window.__authUser || 'guest');
+    return 'u:' + u + ':' + key;
+  }
+
   async function storageGet(key){
+    key = nsKey(key);
     try{
       if(window.storage &amp;&amp; window.storage.get){
         const res = await window.storage.get(key, false);
@@ -1581,6 +1746,7 @@
   }
 
   async function storageSet(key, value){
+    key = nsKey(key);
     memoryStore[key] = value;
     try{
       if(window.storage &amp;&amp; window.storage.set){
@@ -3162,7 +3328,7 @@
     'Investasi':    '#14B8A6',
   };
 
-  const STORAGE_KEY = 'keuanganku_v2';
+  const STORAGE_KEY = 'keuanganku_v2:' + (window.__authUser || 'guest');
 
   /* ─── Persistence ─── */
   async function save() {
@@ -4231,7 +4397,7 @@
 
   const TAPE_COLORS = ['var(--pink-light)', 'var(--mint)', 'var(--lavender)', 'var(--butter)'];
 
-  const STORAGE_KEY = 'wishlist-items-shared';
+  const STORAGE_KEY = 'wishlist-items:' + (window.__authUser || 'guest');
   const EMPTY_TEXT = 'wishlist kita masih kosong nih... yuk tambahin impian pertama kalian!';
 
   let items = [];
@@ -4290,7 +4456,7 @@
 
   async function loadItems(){
     try{
-      const res = await window.storage.get(STORAGE_KEY, true);
+      const res = await window.storage.get(STORAGE_KEY, false);
       items = res ? JSON.parse(res.value) : [];
     }catch(e){
       items = [];
@@ -4300,7 +4466,7 @@
 
   async function saveItems(){
     try{
-      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(items), true);
+      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(items), false);
       if(!result){ storageReady = false; }
     }catch(e){
       storageReady = false;
@@ -4494,7 +4660,124 @@
 
   <script>
     var PAGES = ['jadwal','keuangan','wishlist'];
+    var INVITE_CODE = '12345670';
+    var SESSION_KEY = 'akugabungan_session_v1';
+    var currentUser = null; // { uid, name }
 
+    /* ---------- helpers: hashing ---------- */
+    function bufToHex(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('00' + b.toString(16)).slice(-2); }).join('');
+    }
+    async function sha256Hex(str){
+      var enc = new TextEncoder().encode(str);
+      var digest = await crypto.subtle.digest('SHA-256', enc);
+      return bufToHex(digest);
+    }
+    function randomSalt(){
+      var arr = new Uint8Array(16);
+      crypto.getRandomValues(arr);
+      return bufToHex(arr.buffer);
+    }
+    function normalizeUid(name){
+      return name.trim().toLowerCase().replace(/\s+/g, '_');
+    }
+
+    /* ---------- helpers: auth UI ---------- */
+    function showAuthError(msg){
+      var el = document.getElementById('authError');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+    }
+    function setAuthLoading(on){
+      document.getElementById('authLoading').style.display = on ? 'block' : 'none';
+    }
+    function switchAuthTab(which){
+      document.getElementById('authTabLogin').classList.toggle('active', which === 'login');
+      document.getElementById('authTabRegister').classList.toggle('active', which === 'register');
+      document.getElementById('loginForm').style.display = which === 'login' ? 'flex' : 'none';
+      document.getElementById('registerForm').style.display = which === 'register' ? 'flex' : 'none';
+      showAuthError('');
+    }
+
+    /* ---------- auth actions ---------- */
+    async function handleLogin(e){
+      e.preventDefault();
+      showAuthError('');
+      var name = document.getElementById('loginName').value;
+      var password = document.getElementById('loginPassword').value;
+      if(!name.trim() || !password){ showAuthError('Nama dan password wajib diisi ya.'); return false; }
+      var uid = normalizeUid(name);
+      setAuthLoading(true);
+      try{
+        var res = await window.authStorage.get('acct:' + uid, true);
+        if(!res || !res.value){ showAuthError('Akun belum ada. Coba daftar dulu ya.'); return false; }
+        var rec = JSON.parse(res.value);
+        var hash = await sha256Hex(rec.salt + password);
+        if(hash !== rec.hash){ showAuthError('Password salah, coba lagi ya.'); return false; }
+        loginSession(uid, rec.name);
+      }catch(err){
+        showAuthError('Gagal terhubung ke server. Cek koneksi internet, terus coba lagi ya.');
+      }finally{
+        setAuthLoading(false);
+      }
+      return false;
+    }
+
+    async function handleRegister(e){
+      e.preventDefault();
+      showAuthError('');
+      var name = document.getElementById('regName').value;
+      var password = document.getElementById('regPassword').value;
+      var password2 = document.getElementById('regPassword2').value;
+      var invite = document.getElementById('regInvite').value.trim();
+      if(!name.trim() || !password){ showAuthError('Nama dan password wajib diisi ya.'); return false; }
+      if(password.length < 4){ showAuthError('Password minimal 4 karakter ya.'); return false; }
+      if(password !== password2){ showAuthError('Konfirmasi password nggak cocok.'); return false; }
+      if(invite !== INVITE_CODE){ showAuthError('Kode undangan salah.'); return false; }
+      var uid = normalizeUid(name);
+      setAuthLoading(true);
+      try{
+        var existing = await window.authStorage.get('acct:' + uid, true);
+        if(existing && existing.value){ showAuthError('Nama ini sudah dipakai. Coba nama lain atau masuk (login).'); return false; }
+        var salt = randomSalt();
+        var hash = await sha256Hex(salt + password);
+        var rec = { name: name.trim(), salt: salt, hash: hash, createdAt: Date.now() };
+        await window.authStorage.set('acct:' + uid, JSON.stringify(rec), true);
+        loginSession(uid, rec.name);
+      }catch(err){
+        showAuthError('Gagal terhubung ke server. Cek koneksi internet, terus coba lagi ya.');
+      }finally{
+        setAuthLoading(false);
+      }
+      return false;
+    }
+
+    function loginSession(uid, name){
+      currentUser = { uid: uid, name: name };
+      try{ localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); }catch(e){}
+      revealMenu();
+    }
+
+    function logout(){
+      try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+      location.reload();
+    }
+
+    function revealMenu(){
+      document.getElementById('page-auth').style.display = 'none';
+      var greet = document.getElementById('userGreeting');
+      if(greet) greet.textContent = currentUser ? ('halo, ' + currentUser.name + '! 👋') : '';
+      showMenuUI();
+    }
+
+    /* ---------- inject current user id into each sub-app ---------- */
+    function injectUser(html){
+      var uid = currentUser ? currentUser.uid : 'guest';
+      var tag = '<script>window.__authUser = ' + JSON.stringify(uid) + ';</' + 'script>';
+      return html.replace('<head>', '<head>' + tag);
+    }
+
+    /* ---------- page navigation ---------- */
     function showFrameUI(name){
       document.getElementById('page-menu').style.display = 'none';
       PAGES.forEach(function(n){
@@ -4503,7 +4786,7 @@
       var iframe = document.getElementById('iframe-' + name);
       if(!iframe.dataset.loaded){
         var tpl = document.getElementById('tpl-' + name);
-        iframe.srcdoc = tpl.value;
+        iframe.srcdoc = injectUser(tpl.value);
         iframe.dataset.loaded = '1';
       }
       window.scrollTo(0,0);
@@ -4513,7 +4796,7 @@
       PAGES.forEach(function(n){
         document.getElementById('page-' + n).classList.remove('active');
       });
-      document.getElementById('page-menu').style.display = '';
+      document.getElementById('page-menu').style.display = 'block';
       window.scrollTo(0,0);
     }
 
@@ -4525,15 +4808,28 @@
     window.addEventListener('popstate', function(e){
       var state = e.state;
       if(state && state.page && PAGES.indexOf(state.page) !== -1){
-        showFrameUI(state.page);
+        if(currentUser) showFrameUI(state.page);
       } else {
-        showMenuUI();
+        if(currentUser) showMenuUI();
       }
     });
 
     if(!history.state){
       history.replaceState({ page: 'menu' }, '', location.pathname + location.search);
     }
+
+    /* ---------- boot: resume session if any ---------- */
+    (function initAuth(){
+      try{
+        var raw = localStorage.getItem(SESSION_KEY);
+        if(raw){
+          currentUser = JSON.parse(raw);
+          revealMenu();
+          return;
+        }
+      }catch(e){}
+      switchAuthTab('login');
+    })();
   </script>
 
 </body>
