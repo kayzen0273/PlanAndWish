@@ -3972,6 +3972,76 @@
     margin-top: 8px;
   }
 
+  /* ---- Pairing panel (gabung wishlist dengan akun lain) ---- */
+  .pair-panel{
+    display: none;
+    max-width: 640px;
+    margin: 0 auto 30px;
+    background: var(--white);
+    border: 2px dashed var(--pink-light);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .pair-panel.pair-visible{ display: block; }
+  h1.main-title{ cursor: default; user-select: none; }
+  .pair-panel .pair-title{
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .pair-panel .pair-desc{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .pair-panel .pair-status{
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .pair-panel .pair-linked{
+    font-weight: 800;
+    color: var(--pink-deep);
+  }
+  .pair-form{
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .pair-form input{
+    flex: 1;
+    min-width: 160px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 9px 14px;
+    border-radius: 14px;
+    border: 2px solid var(--cream-deep);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pair-form input:focus{ border-color: var(--pink); background: var(--white); }
+  .pair-btn{
+    border: none;
+    border-radius: 14px;
+    padding: 9px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+  }
+  .pair-btn:hover{ transform: translateY(-2px); }
+  .pair-btn:active{ transform: translateY(0); }
+  .pair-btn.primary{ background: var(--pink-deep); color: var(--white); }
+  .pair-btn.accept{ background: var(--mint); color: var(--ink); }
+  .pair-btn.decline{ background: var(--cream-deep); color: var(--ink-soft); }
+
   /* ---- Add form: sticky note ---- */
   .add-card{
     position: relative;
@@ -4359,11 +4429,15 @@
   &lt;div class="wrap"&gt;
     &lt;header&gt;
       &lt;span class="title-badge"&gt;wishlist board&lt;/span&gt;
-      &lt;h1 class="main-title"&gt;💑 Wishlist&lt;/h1&gt;
+      &lt;h1 class="main-title" id="wishlistTitle"&gt;💑 Wishlist&lt;/h1&gt;
       &lt;p class="subtitle"&gt;kumpulin barang, tempat, atau apa aja yang kalian berdua idam-idamkan~&lt;/p&gt;
       &lt;p class="mode-hint"&gt;wishlist ini bisa dilihat kalian berdua ya~ 💗&lt;/p&gt;
       &lt;div class="stats" id="statsRow"&gt;&lt;/div&gt;
     &lt;/header&gt;
+
+    &lt;div class="pair-panel" id="pairPanel"&gt;
+      &lt;div class="pair-status"&gt;memeriksa status gabungan...&lt;/div&gt;
+    &lt;/div&gt;
 
     &lt;div class="add-card"&gt;
       &lt;div class="pin"&gt;🎀&lt;/div&gt;
@@ -4418,11 +4492,35 @@
 
   const TAPE_COLORS = ['var(--pink-light)', 'var(--mint)', 'var(--lavender)', 'var(--butter)'];
 
-  const STORAGE_KEY = 'wishlist-items:' + (window.__authUser || 'guest');
+  const OWN_UID = window.__authUser || 'guest';
+  const INDIVIDUAL_KEY = 'wishlist-items:' + OWN_UID;
   const EMPTY_TEXT = 'wishlist kita masih kosong nih... yuk tambahin impian pertama kalian!';
 
   let items = [];
   let storageReady = true;
+  let pairedWith = null;
+  let pairPollTimer = null;
+
+  function pairKeyOf(a, b){
+    return [a, b].sort().join('__');
+  }
+
+  function activeStorageKey(){
+    return pairedWith ? ('wishlist-items:pair:' + pairKeyOf(OWN_UID, pairedWith)) : INDIVIDUAL_KEY;
+  }
+
+  function normUid(name){
+    return name.trim().toLowerCase().replace(/\s+/g, '_');
+  }
+
+  async function getAcctName(uid){
+    try{
+      const res = await window.storage.get('acct:' + uid, true);
+      if(!res || !res.value) return null;
+      const rec = JSON.parse(res.value);
+      return rec.name || uid;
+    }catch(e){ return null; }
+  }
 
   const contentEl = document.getElementById('content');
   const statsRow = document.getElementById('statsRow');
@@ -4477,7 +4575,7 @@
 
   async function loadItems(){
     try{
-      const res = await window.storage.get(STORAGE_KEY, false);
+      const res = await window.storage.get(activeStorageKey(), false);
       items = res ? JSON.parse(res.value) : [];
     }catch(e){
       items = [];
@@ -4487,7 +4585,7 @@
 
   async function saveItems(){
     try{
-      const result = await window.storage.set(STORAGE_KEY, JSON.stringify(items), false);
+      const result = await window.storage.set(activeStorageKey(), JSON.stringify(items), false);
       if(!result){ storageReady = false; }
     }catch(e){
       storageReady = false;
@@ -4672,7 +4770,229 @@
     await saveItems();
   });
 
-  loadItems();
+  // ---- Pairing: gabungkan wishlist dengan akun lain ----
+  const pairPanel = document.getElementById('pairPanel');
+  const wishlistTitle = document.getElementById('wishlistTitle');
+
+  // secret trigger: klik judul 4x buat munculin/nyembunyiin panel gabung akun
+  let titleClickCount = 0;
+  let titleClickTimer = null;
+  if(wishlistTitle){
+    wishlistTitle.addEventListener('click', () =&gt; {
+      titleClickCount++;
+      clearTimeout(titleClickTimer);
+      titleClickTimer = setTimeout(() =&gt; { titleClickCount = 0; }, 1200);
+      if(titleClickCount &gt;= 4){
+        titleClickCount = 0;
+        clearTimeout(titleClickTimer);
+        pairPanel.classList.toggle('pair-visible');
+      }
+    });
+  }
+
+  function renderPairPanel(state){
+    if(state.mode === 'paired'){
+      pairPanel.innerHTML = `
+        &lt;div class="pair-status"&gt;💗 wishlist tergabung sama &lt;span class="pair-linked"&gt;${escapeHtml(state.partnerName)}&lt;/span&gt;, real-time sinkron!&lt;/div&gt;
+        &lt;div class="pair-form" style="margin-top:10px;"&gt;
+          &lt;button type="button" class="pair-btn decline" id="btnUnpair"&gt;putuskan gabungan&lt;/button&gt;
+        &lt;/div&gt;
+      `;
+      document.getElementById('btnUnpair').addEventListener('click', doUnpair);
+    } else if(state.mode === 'incoming'){
+      pairPanel.innerHTML = `
+        &lt;div class="pair-title"&gt;💌 ${escapeHtml(state.fromName)} ingin gabungin wishlist sama kamu&lt;/div&gt;
+        &lt;div class="pair-desc"&gt;kalau diterima, wishlist kalian berdua bakal jadi satu dan selalu sinkron ya~&lt;/div&gt;
+        &lt;div class="pair-form"&gt;
+          &lt;button type="button" class="pair-btn accept" id="btnAccept"&gt;terima 💕&lt;/button&gt;
+          &lt;button type="button" class="pair-btn decline" id="btnDecline"&gt;tolak&lt;/button&gt;
+        &lt;/div&gt;
+      `;
+      document.getElementById('btnAccept').addEventListener('click', doAccept);
+      document.getElementById('btnDecline').addEventListener('click', doDecline);
+    } else if(state.mode === 'outgoing'){
+      pairPanel.innerHTML = `
+        &lt;div class="pair-status"&gt;⏳ menunggu &lt;span class="pair-linked"&gt;${escapeHtml(state.toName)}&lt;/span&gt; konfirmasi gabungan wishlist...&lt;/div&gt;
+        &lt;div class="pair-form" style="margin-top:10px;"&gt;
+          &lt;button type="button" class="pair-btn decline" id="btnCancelOut"&gt;batalin&lt;/button&gt;
+        &lt;/div&gt;
+      `;
+      document.getElementById('btnCancelOut').addEventListener('click', doCancelOutgoing);
+    } else {
+      pairPanel.innerHTML = `
+        &lt;div class="pair-title"&gt;💑 gabungin wishlist sama pasangan?&lt;/div&gt;
+        &lt;div class="pair-desc"&gt;masukin nama akun pasangan kamu, nanti wishlist kalian berdua digabung jadi satu &amp; selalu sinkron.&lt;/div&gt;
+        &lt;div class="pair-form"&gt;
+          &lt;input type="text" id="partnerNameInput" placeholder="nama akun pasangan" maxlength="60"&gt;
+          &lt;button type="button" class="pair-btn primary" id="btnSendPair"&gt;gabungin&lt;/button&gt;
+        &lt;/div&gt;
+      `;
+      document.getElementById('btnSendPair').addEventListener('click', doSendRequest);
+    }
+  }
+
+  async function refreshPairState(){
+    try{
+      const myPair = await window.storage.get('wishlist-pair:' + OWN_UID, false);
+      if(myPair && myPair.value){
+        const rec = JSON.parse(myPair.value);
+        pairedWith = rec.partner;
+        renderPairPanel({ mode: 'paired', partnerName: rec.partnerName || rec.partner });
+        return 'paired';
+      }
+    }catch(e){}
+
+    pairedWith = null;
+
+    try{
+      const incoming = await window.storage.get('wishlist-pair-request:' + OWN_UID, false);
+      if(incoming && incoming.value){
+        const rec = JSON.parse(incoming.value);
+        renderPairPanel({ mode: 'incoming', fromName: rec.fromName || rec.fromUid });
+        return 'incoming';
+      }
+    }catch(e){}
+
+    try{
+      const outgoing = await window.storage.get('wishlist-pair-outgoing:' + OWN_UID, false);
+      if(outgoing && outgoing.value){
+        const rec = JSON.parse(outgoing.value);
+        let stillPending = null;
+        try{ stillPending = await window.storage.get('wishlist-pair-request:' + rec.toUid, false); }catch(e){}
+        if(!stillPending || !stillPending.value){
+          try{ await window.storage.delete('wishlist-pair-outgoing:' + OWN_UID, false); }catch(e){}
+        } else {
+          renderPairPanel({ mode: 'outgoing', toName: rec.toName || rec.toUid });
+          return 'outgoing';
+        }
+      }
+    }catch(e){}
+
+    renderPairPanel({ mode: 'none' });
+    return 'none';
+  }
+
+  async function doSendRequest(){
+    const input = document.getElementById('partnerNameInput');
+    const rawName = input ? input.value.trim() : '';
+    if(!rawName){ alert('Isi dulu nama akun pasangan ya~'); return; }
+    const targetUid = normUid(rawName);
+    if(targetUid === OWN_UID){ alert('Nggak bisa gabung sama akun sendiri ya 😅'); return; }
+
+    const targetName = await getAcctName(targetUid);
+    if(!targetName){ alert('Akun dengan nama itu nggak ketemu. Pastikan namanya sama persis kayak waktu daftar ya.'); return; }
+
+    const myName = await getAcctName(OWN_UID) || OWN_UID;
+
+    try{
+      await window.storage.set('wishlist-pair-request:' + targetUid, JSON.stringify({ fromUid: OWN_UID, fromName: myName, sentAt: Date.now() }), false);
+      await window.storage.set('wishlist-pair-outgoing:' + OWN_UID, JSON.stringify({ toUid: targetUid, toName: targetName, sentAt: Date.now() }), false);
+    }catch(e){
+      alert('Gagal ngirim permintaan, coba lagi ya.');
+      return;
+    }
+
+    await refreshPairState();
+  }
+
+  async function doCancelOutgoing(){
+    try{
+      const outgoing = await window.storage.get('wishlist-pair-outgoing:' + OWN_UID, false);
+      if(outgoing && outgoing.value){
+        const rec = JSON.parse(outgoing.value);
+        try{ await window.storage.delete('wishlist-pair-request:' + rec.toUid, false); }catch(e){}
+      }
+      await window.storage.delete('wishlist-pair-outgoing:' + OWN_UID, false);
+    }catch(e){}
+    await refreshPairState();
+  }
+
+  async function doDecline(){
+    try{
+      await window.storage.delete('wishlist-pair-request:' + OWN_UID, false);
+    }catch(e){}
+    await refreshPairState();
+  }
+
+  async function doAccept(){
+    let rec;
+    try{
+      const incoming = await window.storage.get('wishlist-pair-request:' + OWN_UID, false);
+      if(!incoming || !incoming.value){ await refreshPairState(); return; }
+      rec = JSON.parse(incoming.value);
+    }catch(e){ return; }
+
+    const fromUid = rec.fromUid;
+    const myName = await getAcctName(OWN_UID) || OWN_UID;
+    const partnerName = rec.fromName || fromUid;
+
+    try{
+      let mineRes = null, theirsRes = null;
+      try{ mineRes = await window.storage.get(INDIVIDUAL_KEY, false); }catch(e){}
+      try{ theirsRes = await window.storage.get('wishlist-items:' + fromUid, false); }catch(e){}
+      const mine = mineRes ? JSON.parse(mineRes.value) : [];
+      const theirs = theirsRes ? JSON.parse(theirsRes.value) : [];
+      const merged = theirs.concat(mine);
+
+      const sharedKey = 'wishlist-items:pair:' + pairKeyOf(OWN_UID, fromUid);
+      await window.storage.set(sharedKey, JSON.stringify(merged), false);
+
+      await window.storage.set('wishlist-pair:' + OWN_UID, JSON.stringify({ partner: fromUid, partnerName: partnerName }), false);
+      await window.storage.set('wishlist-pair:' + fromUid, JSON.stringify({ partner: OWN_UID, partnerName: myName }), false);
+
+      try{ await window.storage.delete('wishlist-pair-request:' + OWN_UID, false); }catch(e){}
+      try{ await window.storage.delete('wishlist-pair-outgoing:' + fromUid, false); }catch(e){}
+    }catch(e){
+      alert('Gagal gabungin wishlist, coba lagi ya.');
+      return;
+    }
+
+    pairedWith = fromUid;
+    await refreshPairState();
+    await loadItems();
+  }
+
+  async function doUnpair(){
+    if(!pairedWith) return;
+    const ok = confirm('Yakin mau putusin gabungan wishlist? Datanya tetap aman kok, bakal disalin balik ke masing-masing akun.');
+    if(!ok) return;
+
+    const partnerUid = pairedWith;
+    try{
+      const currentRes = await window.storage.get(activeStorageKey(), false);
+      const currentItems = currentRes ? currentRes.value : '[]';
+      await window.storage.set('wishlist-items:' + OWN_UID, currentItems, false);
+      await window.storage.set('wishlist-items:' + partnerUid, currentItems, false);
+      try{ await window.storage.delete('wishlist-pair:' + OWN_UID, false); }catch(e){}
+      try{ await window.storage.delete('wishlist-pair:' + partnerUid, false); }catch(e){}
+    }catch(e){
+      alert('Gagal putusin gabungan, coba lagi ya.');
+      return;
+    }
+
+    pairedWith = null;
+    await refreshPairState();
+    await loadItems();
+  }
+
+  function startPairPolling(){
+    if(pairPollTimer) clearInterval(pairPollTimer);
+    pairPollTimer = setInterval(async () =&gt; {
+      const wasPaired = !!pairedWith;
+      const mode = await refreshPairState();
+      if(mode === 'paired'){
+        await loadItems();
+      } else if(wasPaired){
+        await loadItems();
+      }
+    }, 6000);
+  }
+
+  (async function initWishlist(){
+    await refreshPairState();
+    await loadItems();
+    startPairPolling();
+  })();
 &lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;
