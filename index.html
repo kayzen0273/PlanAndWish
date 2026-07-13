@@ -295,7 +295,15 @@
     return { key: key, value: value, shared: s };
   }
 
-  window.authStorage = { get: get, set: set };
+  async function del(key, shared){
+    if(!sb) throw new Error('supabase belum siap');
+    var s = !!shared;
+    var res = await sb.from('kv_store').delete().eq('key', key).eq('shared', s);
+    if(res.error) throw res.error;
+    return { key: key, deleted: true, shared: s };
+  }
+
+  window.authStorage = { get: get, set: set, delete: del };
 })();
 </script>
 
@@ -374,6 +382,226 @@
     cursor:pointer;
     margin-left:8px;
   }
+
+  /* ---------- profile row + avatar ---------- */
+  .profile-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .avatar-wrap{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:2.5px solid var(--ink);
+    background:var(--purple-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .avatar-wrap.avatar-wrap-lg{ width:76px; height:76px; }
+  .avatar-img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .avatar-placeholder{ font-size:20px; }
+  .avatar-wrap-lg .avatar-placeholder{ font-size:32px; }
+  .profile-info{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+
+  /* ---------- paired avatars (muncul kalau akun udah gabungan) ---------- */
+  .paired-avatars{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin:16px 0 4px;
+  }
+  .paired-avatar-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  .paired-avatar-btn{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:var(--purple-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    flex-shrink:0;
+    padding:0;
+    cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .paired-avatar-btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+  .paired-avatar-btn:active{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--ink); }
+  .paired-avatar-btn:disabled{ cursor:default; }
+  .paired-avatar-img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .paired-avatar-placeholder{ font-size:26px; }
+  .paired-avatar-name{
+    font-family:var(--font-hand);
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink);
+    max-width:90px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .paired-heart{ font-size:22px; animation:float 2.4s ease-in-out infinite; }
+
+  /* ---------- lightbox foto profil ---------- */
+  .lightbox-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:50;
+    background:rgba(36,28,26,.82);
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+    cursor:zoom-out;
+  }
+  .lightbox-box{
+    position:relative;
+    max-width:min(420px,88vw);
+  }
+  .lightbox-img{
+    display:block;
+    width:100%;
+    max-height:80vh;
+    object-fit:contain;
+    border-radius:20px;
+    border:3px solid var(--paper);
+    box-shadow:0 10px 0 rgba(0,0,0,.35);
+  }
+  .lightbox-close{
+    position:absolute;
+    top:-14px;
+    right:-14px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:2.5px solid var(--ink);
+    background:var(--yellow);
+    font-family:var(--font-display);
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+  }
+  .settings-btn{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:700;
+    border:2px solid var(--ink);
+    background:var(--yellow);
+    color:var(--ink);
+    border-radius:999px;
+    padding:4px 12px;
+    cursor:pointer;
+    box-shadow:2px 2px 0 var(--ink);
+  }
+  .settings-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink); }
+
+  /* ---------- settings modal ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    background:rgba(36,28,26,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-box{
+    position:relative;
+    width:100%;
+    max-width:440px;
+    max-height:88vh;
+    overflow-y:auto;
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:22px;
+    box-shadow:8px 8px 0 var(--ink);
+    padding:28px 24px 22px;
+  }
+  .modal-close{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .modal-title{
+    font-family:var(--font-display);
+    font-size:20px;
+    margin-bottom:18px;
+    text-align:center;
+  }
+  .settings-section{
+    border-top:2px dashed var(--purple-soft);
+    padding-top:16px;
+    margin-top:16px;
+  }
+  .settings-section:first-of-type{ border-top:none; padding-top:0; margin-top:0; }
+  .settings-section h3{
+    font-family:var(--font-display);
+    font-size:14.5px;
+    margin-bottom:10px;
+  }
+  .settings-avatar-row{ display:flex; align-items:center; gap:14px; }
+  .settings-avatar-actions{ display:flex; flex-direction:column; gap:8px; }
+  .settings-msg{
+    margin-top:10px;
+    font-family:var(--font-body);
+    font-size:12.5px;
+    font-weight:700;
+    min-height:1em;
+  }
+  .settings-msg.ok{ color:#1E9E6E; }
+  .settings-msg.err{ color:#D6284A; }
+
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .toggle-row p{ font-size:12.5px; font-weight:600; margin:4px 0 0; opacity:.75; }
+  .toggle-switch{
+    position:relative;
+    width:46px;
+    height:26px;
+    flex-shrink:0;
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    background:var(--purple-soft);
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .toggle-switch.on{ background:var(--mint); }
+  .toggle-switch .knob{
+    position:absolute;
+    top:2px; left:2px;
+    width:17px; height:17px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    transition:transform .15s ease;
+  }
+  .toggle-switch.on .knob{ transform:translateX(19px); }
 </style>
 
 <style>
@@ -456,9 +684,37 @@
 
   <div class="wrap">
     <header>
-      <p id="userGreeting"></p>
+      <div class="profile-row">
+        <div class="avatar-wrap" id="avatarWrap">
+          <img id="avatarImg" class="avatar-img" style="display:none;" alt="foto profil">
+          <span id="avatarPlaceholder" class="avatar-placeholder">🙂</span>
+        </div>
+        <div class="profile-info">
+          <p id="userGreeting"></p>
+          <button type="button" id="settingsBtn" class="settings-btn" onclick="openSettings()">⚙️ Pengaturan</button>
+        </div>
+      </div>
       <span class="tag">✨ menu utama</span>
       <h1 class="main-title">Hai! Yuk <span class="hl">Pilih Menu</span> 👋</h1>
+
+      <div class="paired-avatars" id="pairedAvatars">
+        <div class="paired-avatar-item">
+          <button type="button" class="paired-avatar-btn" id="pairedAvatarMe" onclick="openPhotoLightbox('pairedAvatarMeImg')">
+            <img id="pairedAvatarMeImg" class="paired-avatar-img" style="display:none;" alt="foto kamu">
+            <span id="pairedAvatarMePh" class="paired-avatar-placeholder">🙂</span>
+          </button>
+          <span class="paired-avatar-name" id="pairedAvatarMeName"></span>
+        </div>
+        <span class="paired-heart">💞</span>
+        <div class="paired-avatar-item">
+          <button type="button" class="paired-avatar-btn" id="pairedAvatarPartner" onclick="openPhotoLightbox('pairedAvatarPartnerImg')">
+            <img id="pairedAvatarPartnerImg" class="paired-avatar-img" style="display:none;" alt="foto pasangan">
+            <span id="pairedAvatarPartnerPh" class="paired-avatar-placeholder">🙂</span>
+          </button>
+          <span class="paired-avatar-name" id="pairedAvatarPartnerName"></span>
+        </div>
+      </div>
+
       <p class="tagline">jadwal harian, wishlist & keuangan, semua ada di sini</p>
     </header>
 
@@ -523,6 +779,77 @@
     <footer>dibuat dengan 💛 <button type="button" id="logoutBtn" onclick="logout()">Keluar</button></footer>
   </div>
 
+  <div class="modal-overlay" id="settingsModal" style="display:none;">
+    <div class="modal-box">
+      <button type="button" class="modal-close" onclick="closeSettings()">✕</button>
+      <h2 class="modal-title">⚙️ Pengaturan Akun</h2>
+
+      <section class="settings-section">
+        <h3>Foto Profil</h3>
+        <div class="settings-avatar-row">
+          <div class="avatar-wrap avatar-wrap-lg" id="settingsAvatarWrap">
+            <img id="settingsAvatarImg" class="avatar-img" style="display:none;" alt="foto profil">
+            <span id="settingsAvatarPlaceholder" class="avatar-placeholder">🙂</span>
+          </div>
+          <div class="settings-avatar-actions">
+            <label class="auth-submit" style="text-align:center; cursor:pointer;">
+              Ganti Foto
+              <input type="file" id="photoInput" accept="image/*" style="display:none;">
+            </label>
+            <button type="button" class="auth-tab" id="removePhotoBtn" style="background:var(--paper);">Hapus Foto</button>
+          </div>
+        </div>
+        <p class="settings-msg" id="photoMsg"></p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Privasi Jadwal Harian</h3>
+        <div class="toggle-row">
+          <div>
+            <strong style="font-size:13px;">Izinkan pasangan lihat jadwalku</strong>
+            <p>Jadwal kalian tetap punya data masing-masing, cuma pasangan bisa liat aja (nggak bisa ubah) kalau ini dinyalain.</p>
+          </div>
+          <div class="toggle-switch" id="jadwalPublicToggle"><div class="knob"></div></div>
+        </div>
+        <p class="settings-msg" id="jadwalPublicMsg"></p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Ganti Username</h3>
+        <form id="renameForm" class="auth-form">
+          <label>Username baru
+            <input type="text" id="newUsernameInput" required>
+          </label>
+          <button type="submit" class="auth-submit">Simpan Username</button>
+        </form>
+        <p class="settings-msg" id="renameMsg"></p>
+      </section>
+
+      <section class="settings-section">
+        <h3>Ganti Password</h3>
+        <form id="passwordForm" class="auth-form">
+          <label>Password saat ini
+            <input type="password" id="curPasswordInput" required autocomplete="current-password">
+          </label>
+          <label>Password baru
+            <input type="password" id="newPasswordInput" required minlength="4" autocomplete="new-password">
+          </label>
+          <label>Ulangi password baru
+            <input type="password" id="newPassword2Input" required minlength="4" autocomplete="new-password">
+          </label>
+          <button type="submit" class="auth-submit">Simpan Password</button>
+        </form>
+        <p class="settings-msg" id="passwordMsg"></p>
+      </section>
+    </div>
+  </div>
+
+  <div class="lightbox-overlay" id="photoLightbox" onclick="closePhotoLightbox(event)">
+    <div class="lightbox-box">
+      <button type="button" class="lightbox-close" onclick="closePhotoLightbox(event)">✕</button>
+      <img id="lightboxImg" class="lightbox-img" alt="foto profil diperbesar">
+    </div>
+  </div>
 
   </div>
 
@@ -1261,6 +1588,38 @@
 
   .task.readonly .check{ cursor:default; opacity:.7; }
 
+  /* ---------- VIEWER SWITCH (jadwalku vs jadwal pasangan) ---------- */
+  .viewer-switch{
+    display:none;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .viewer-tab{
+    flex:1;
+    text-align:center;
+    background:var(--surface);
+    border:2.5px solid var(--ink);
+    border-radius:12px;
+    padding:8px 6px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    user-select:none;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .viewer-tab:hover{ transform:translate(-1px,-1px); box-shadow:3.5px 3.5px 0 var(--ink); }
+  .viewer-tab.active{
+    background:var(--pink);
+    color:#fff;
+    transform:translate(-1px,-1px);
+    box-shadow:3.5px 3.5px 0 var(--ink);
+  }
+
   .week-nav-label.clickable{
     cursor:pointer;
     transition:transform .1s ease, background .1s ease;
@@ -1497,6 +1856,11 @@
     &lt;/div&gt;
 
     &lt;div class="page active" id="pageJadwal"&gt;
+      &lt;div class="viewer-switch" id="viewerSwitch"&gt;
+        &lt;button type="button" class="viewer-tab active" id="viewerTabMe"&gt;Jadwalku&lt;/button&gt;
+        &lt;button type="button" class="viewer-tab" id="viewerTabPartner"&gt;👀 Jadwal &lt;span id="viewerPartnerName"&gt;Pasangan&lt;/span&gt;&lt;/button&gt;
+      &lt;/div&gt;
+
       &lt;div class="week-nav"&gt;
         &lt;button class="week-nav-btn" id="prevWeekBtnJadwal"&gt;◀&lt;/button&gt;
         &lt;span class="week-nav-label" id="weekNavLabelJadwal"&gt;--&lt;/span&gt;
@@ -1504,7 +1868,7 @@
       &lt;/div&gt;
 
       &lt;div class="readonly-banner" id="readonlyBanner" style="display:none;"&gt;
-        📖 Melihat minggu lalu — centang &amp;amp; edit dikunci
+        &lt;span id="readonlyBannerText"&gt;📖 Melihat minggu lalu — centang &amp;amp; edit dikunci&lt;/span&gt;
         &lt;button class="readonly-back-btn" id="readonlyBackBtn"&gt;Kembali ke minggu ini&lt;/button&gt;
       &lt;/div&gt;
 
@@ -1702,7 +2066,12 @@
   const nextWeekBtnJadwal = document.getElementById('nextWeekBtnJadwal');
   const weekNavLabelJadwal = document.getElementById('weekNavLabelJadwal');
   const readonlyBanner = document.getElementById('readonlyBanner');
+  const readonlyBannerText = document.getElementById('readonlyBannerText');
   const readonlyBackBtn = document.getElementById('readonlyBackBtn');
+  const viewerSwitch = document.getElementById('viewerSwitch');
+  const viewerTabMe = document.getElementById('viewerTabMe');
+  const viewerTabPartner = document.getElementById('viewerTabPartner');
+  const viewerPartnerNameEl = document.getElementById('viewerPartnerName');
   const addCard = document.getElementById('addCard');
   const dateModalBackdrop = document.getElementById('dateModalBackdrop');
   const dateModalInputFrom = document.getElementById('dateModalInputFrom');
@@ -1716,6 +2085,12 @@
 
   let pendingUndo = null;
   let toastTimer = null;
+
+  // ---- lihat jadwal pasangan (read-only, datanya TETAP terpisah, nggak digabung) ----
+  let viewingUid = null;   // null = jadwalku sendiri; diisi uid pasangan kalau lagi ngintip jadwalnya
+  let partnerUid = null;
+  let partnerName = '';
+  let partnerPublic = false;
 
   function showToast(message, undoFn){
     clearTimeout(toastTimer);
@@ -1746,24 +2121,25 @@
     return names[d.getDay()] + ', ' + d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  function nsKey(key){
-    var u = (window.__authUser || 'guest');
+  function nsKey(key, uid){
+    var u = uid || (window.__authUser || 'guest');
     return 'u:' + u + ':' + key;
   }
 
-  async function storageGet(key){
-    key = nsKey(key);
+  async function storageGet(key, uid){
+    var nsedKey = nsKey(key, uid);
     try{
       if(window.storage &amp;&amp; window.storage.get){
-        const res = await window.storage.get(key, false);
+        const res = await window.storage.get(nsedKey, false);
         return res ? res.value : null;
       }
     }catch(e){ /* key not found or storage unavailable */ }
+    if(uid){ return null; } // data orang lain: jangan jatuh ke localStorage/memory lokal
     try{
-      const val = localStorage.getItem(key);
+      const val = localStorage.getItem(nsedKey);
       if(val !== null) return val;
     }catch(e){ /* localStorage unavailable */ }
-    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+    return Object.prototype.hasOwnProperty.call(memoryStore, nsedKey) ? memoryStore[nsedKey] : null;
   }
 
   async function storageSet(key, value){
@@ -1849,11 +2225,13 @@
   }
 
   // Loads the FULL history of tasks ever created for a day (all weeks), normalized.
-  async function loadFullTemplate(day){
-    const raw = await storageGet(tplKey(day));
+  // uid diisi kalau lagi liat jadwal pasangan (read-only, nggak pernah nulis balik ke data orang lain).
+  async function loadFullTemplate(day, uid){
+    const raw = await storageGet(tplKey(day), uid);
     if(raw){
       try{ return normalizeTpl(JSON.parse(raw)); }catch(e){ return []; }
     }
+    if(uid) return []; // lagi liat punya orang lain: jangan migrasi/nulis apa pun ke akunnya
     // migrate legacy single-key format (time,text,done all in one, no week separation)
     const legacyRaw = await storageGet(taskKey(day));
     if(legacyRaw){
@@ -1875,8 +2253,8 @@
     await storageSet(tplKey(day), JSON.stringify(fullTpl));
   }
 
-  async function loadDoneIds(weekKey, day){
-    const raw = await storageGet(doneKey(weekKey, day));
+  async function loadDoneIds(weekKey, day, uid){
+    const raw = await storageGet(doneKey(weekKey, day), uid);
     if(raw){
       try{ return JSON.parse(raw); }catch(e){ return []; }
     }
@@ -1895,9 +2273,10 @@
   }
 
   // Loads the full history AND the merged (filtered + completion) view for a given day within a given week.
-  async function loadDayForWeek(weekKey, day){
-    const fullTpl = await loadFullTemplate(day);
-    const doneIds = await loadDoneIds(weekKey, day);
+  // uid diisi kalau lagi ngintip jadwal pasangan; kalau kosong berarti jadwal sendiri seperti biasa.
+  async function loadDayForWeek(weekKey, day, uid){
+    const fullTpl = await loadFullTemplate(day, uid);
+    const doneIds = await loadDoneIds(weekKey, day, uid);
     return { fullTpl, view: deriveWeekView(fullTpl, weekKey, doneIds) };
   }
 
@@ -1938,13 +2317,16 @@
 
   function renderTasks(){
     taskListEl.innerHTML = '';
-    const readOnly = !isCurrentJadwalWeek();
+    const viewingPartner = viewingUid !== null;
+    const readOnly = !isCurrentJadwalWeek() || viewingPartner;
     if(tasks.length === 0){
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.textContent = readOnly
-        ? 'Nggak ada kegiatan tercatat di minggu ini. 📭'
-        : 'Belum ada jadwal buat hari ini. Yuk tambahin! 📝';
+      empty.textContent = viewingPartner
+        ? 'Nggak ada kegiatan tercatat di jadwal ' + partnerName + '. 📭'
+        : (readOnly
+          ? 'Nggak ada kegiatan tercatat di minggu ini. 📭'
+          : 'Belum ada jadwal buat hari ini. Yuk tambahin! 📝');
       taskListEl.appendChild(empty);
       clearBtn.style.display = 'none';
     } else {
@@ -1984,7 +2366,20 @@
     copyBtn.disabled = tasks.length === 0;
     addCard.style.display = readOnly ? 'none' : 'block';
     copyBtn.style.display = readOnly ? 'none' : 'inline-block';
-    readonlyBanner.style.display = readOnly ? 'block' : 'none';
+
+    if(!readOnly){
+      readonlyBanner.style.display = 'none';
+    } else {
+      readonlyBanner.style.display = 'block';
+      if(viewingPartner){
+        readonlyBannerText.textContent = '👀 Lagi liat jadwal ' + partnerName + ' — cuma bisa diliat, nggak bisa diubah.';
+        readonlyBackBtn.textContent = 'Kembali ke jadwalku';
+      } else {
+        readonlyBannerText.textContent = '📖 Melihat minggu lalu — centang &amp; edit dikunci';
+        readonlyBackBtn.textContent = 'Kembali ke minggu ini';
+      }
+    }
+
     weekNavLabelJadwal.textContent = weekLabel(jadwalWeekKey) + (isCurrentJadwalWeek() ? ' (ini)' : '');
     nextWeekBtnJadwal.disabled = isCurrentJadwalWeek();
     updateProgress();
@@ -2204,10 +2599,10 @@
     activeDay = day;
     renderTabs();
     const label = DAYS.find(d=&gt;d.key===day).short;
-    listTitleEl.textContent = 'Kegiatan · ' + label.toUpperCase();
+    listTitleEl.textContent = 'Kegiatan · ' + label.toUpperCase() + (viewingUid ? ' (' + partnerName + ')' : '');
     copyPanel.style.display = 'none';
     renderCopyPanel();
-    const { fullTpl, view } = await loadDayForWeek(jadwalWeekKey, day);
+    const { fullTpl, view } = await loadDayForWeek(jadwalWeekKey, day, viewingUid);
     activeTemplate = fullTpl;
     tasks = sortTasks(view);
     renderTasks();
@@ -2286,10 +2681,34 @@
     }
   }
 
+  // ---- cek apakah akun ini gabungan sama pasangan, DAN pasangannya izinin jadwal dilihat ----
+  // Jadwal TETAP data terpisah per akun (nggak digabung kayak wishlist), cuma boleh diintip
+  // read-only kalau pasangan aktifin toggle "jadwal publik" di Pengaturan.
+  async function checkPartnerAvailability(){
+    try{
+      const ownUid = (window.__authUser || 'guest');
+      const pairRaw = await window.storage.get('wishlist-pair:' + ownUid, false);
+      if(!pairRaw || !pairRaw.value) return;
+      const pairInfo = JSON.parse(pairRaw.value);
+      if(!pairInfo || !pairInfo.partner) return;
+      partnerUid = pairInfo.partner;
+      partnerName = pairInfo.partnerName || partnerUid;
+
+      const pubRaw = await window.storage.get('jadwal-public:' + partnerUid, true);
+      partnerPublic = !!(pubRaw &amp;&amp; pubRaw.value === 'true');
+
+      if(partnerPublic){
+        viewerPartnerNameEl.textContent = partnerName;
+        viewerSwitch.style.display = 'flex';
+      }
+    }catch(e){ /* pairing/izin nggak ketemu, fitur ini cuma nggak muncul */ }
+  }
+
   async function init(){
     todayPill.textContent = todayLabel();
     renderTabs();
     initMbgMascot();
+    await checkPartnerAvailability();
     await switchDay(activeDay);
 
     document.getElementById('addBtn').addEventListener('click', addTask);
@@ -2303,6 +2722,22 @@
     });
     navJadwal.addEventListener('click', ()=&gt; showPage('jadwal'));
     navGrafik.addEventListener('click', ()=&gt; showPage('grafik'));
+    viewerTabMe.addEventListener('click', async ()=&gt;{
+      if(viewingUid === null) return;
+      viewingUid = null;
+      viewerTabMe.classList.add('active');
+      viewerTabPartner.classList.remove('active');
+      jadwalWeekKey = currentWeekKey();
+      await switchDay(activeDay);
+    });
+    viewerTabPartner.addEventListener('click', async ()=&gt;{
+      if(!partnerUid || !partnerPublic || viewingUid === partnerUid) return;
+      viewingUid = partnerUid;
+      viewerTabPartner.classList.add('active');
+      viewerTabMe.classList.remove('active');
+      jadwalWeekKey = currentWeekKey();
+      await switchDay(activeDay);
+    });
     prevWeekBtn.addEventListener('click', ()=&gt;{
       const rangeDays = Math.round((chartRangeEnd - chartRangeStart) / 86400000) + 1;
       chartRangeStart = addDays(chartRangeStart, -rangeDays);
@@ -2331,6 +2766,11 @@
     });
     readonlyBackBtn.addEventListener('click', async ()=&gt;{
       jadwalWeekKey = currentWeekKey();
+      if(viewingUid !== null){
+        viewingUid = null;
+        viewerTabMe.classList.add('active');
+        viewerTabPartner.classList.remove('active');
+      }
       await switchDay(activeDay);
     });
 
@@ -4522,6 +4962,24 @@
     }catch(e){ return null; }
   }
 
+  // Cari uid akun dari nama yang diketik user. Pakai tabel penunjuk 'uname:'
+  // biar tetap ketemu walau pemilik akun udah pernah ganti username.
+  async function resolveUidByName(name){
+    const normalized = normUid(name);
+    try{
+      const ptr = await window.storage.get('uname:' + normalized, true);
+      if(ptr && ptr.value) return ptr.value;
+    }catch(e){}
+    try{
+      const direct = await window.storage.get('acct:' + normalized, true);
+      if(direct && direct.value){
+        const rec = JSON.parse(direct.value);
+        if(!rec.currentUnameKey || rec.currentUnameKey === normalized) return normalized;
+      }
+    }catch(e){}
+    return null;
+  }
+
   const contentEl = document.getElementById('content');
   const statsRow = document.getElementById('statsRow');
   const catInput = document.getElementById('catInput');
@@ -4876,11 +5334,12 @@
     const input = document.getElementById('partnerNameInput');
     const rawName = input ? input.value.trim() : '';
     if(!rawName){ alert('Isi dulu nama akun pasangan ya~'); return; }
-    const targetUid = normUid(rawName);
+
+    const targetUid = await resolveUidByName(rawName);
+    if(!targetUid){ alert('Akun dengan nama itu nggak ketemu. Pastikan namanya sama persis kayak username akun pasangan sekarang ya.'); return; }
     if(targetUid === OWN_UID){ alert('Nggak bisa gabung sama akun sendiri ya 😅'); return; }
 
-    const targetName = await getAcctName(targetUid);
-    if(!targetName){ alert('Akun dengan nama itu nggak ketemu. Pastikan namanya sama persis kayak waktu daftar ya.'); return; }
+    const targetName = await getAcctName(targetUid) || rawName;
 
     const myName = await getAcctName(OWN_UID) || OWN_UID;
 
@@ -5024,6 +5483,43 @@
       return name.trim().toLowerCase().replace(/\s+/g, '_');
     }
 
+    /* ---------- helpers: account lookup (supports renamed usernames) ---------- */
+    // Setiap akun punya `uid` permanen (dibuat sekali saat daftar, dipakai semua data
+    // jadwal/keuangan/wishlist). Username yang dipakai login bisa berubah lewat
+    // tabel penunjuk 'uname:<namaSaatIni>' -> uid, biar data lama tetap nyambung.
+    async function findAccountByName(name){
+      var normalized = normalizeUid(name);
+      try{
+        var ptr = await window.authStorage.get('uname:' + normalized, true);
+        if(ptr && ptr.value){
+          var acctRes = await window.authStorage.get('acct:' + ptr.value, true);
+          if(acctRes && acctRes.value){
+            return { uid: ptr.value, rec: JSON.parse(acctRes.value) };
+          }
+        }
+      }catch(e){}
+
+      // fallback buat akun lama yang dibuat sebelum sistem uname ada
+      try{
+        var direct = await window.authStorage.get('acct:' + normalized, true);
+        if(direct && direct.value){
+          var rec = JSON.parse(direct.value);
+          if(!rec.currentUnameKey || rec.currentUnameKey === normalized){
+            try{
+              if(!rec.currentUnameKey){
+                rec.currentUnameKey = normalized;
+                await window.authStorage.set('acct:' + normalized, JSON.stringify(rec), true);
+              }
+              await window.authStorage.set('uname:' + normalized, normalized, true);
+            }catch(e){}
+            return { uid: normalized, rec: rec };
+          }
+        }
+      }catch(e){}
+
+      return null;
+    }
+
     /* ---------- helpers: auth UI ---------- */
     function showAuthError(msg){
       var el = document.getElementById('authError');
@@ -5048,15 +5544,14 @@
       var name = document.getElementById('loginName').value;
       var password = document.getElementById('loginPassword').value;
       if(!name.trim() || !password){ showAuthError('Nama dan password wajib diisi ya.'); return false; }
-      var uid = normalizeUid(name);
       setAuthLoading(true);
       try{
-        var res = await window.authStorage.get('acct:' + uid, true);
-        if(!res || !res.value){ showAuthError('Akun belum ada. Coba daftar dulu ya.'); return false; }
-        var rec = JSON.parse(res.value);
+        var found = await findAccountByName(name);
+        if(!found){ showAuthError('Akun belum ada. Coba daftar dulu ya.'); return false; }
+        var rec = found.rec;
         var hash = await sha256Hex(rec.salt + password);
         if(hash !== rec.hash){ showAuthError('Password salah, coba lagi ya.'); return false; }
-        loginSession(uid, rec.name);
+        loginSession(found.uid, rec.name);
       }catch(err){
         showAuthError('Gagal terhubung ke server. Cek koneksi internet, terus coba lagi ya.');
       }finally{
@@ -5079,12 +5574,16 @@
       var uid = normalizeUid(name);
       setAuthLoading(true);
       try{
-        var existing = await window.authStorage.get('acct:' + uid, true);
-        if(existing && existing.value){ showAuthError('Nama ini sudah dipakai. Coba nama lain atau masuk (login).'); return false; }
+        var existingPtr = await window.authStorage.get('uname:' + uid, true);
+        var existingDirect = await window.authStorage.get('acct:' + uid, true);
+        if((existingPtr && existingPtr.value) || (existingDirect && existingDirect.value)){
+          showAuthError('Nama ini sudah dipakai. Coba nama lain atau masuk (login).'); return false;
+        }
         var salt = randomSalt();
         var hash = await sha256Hex(salt + password);
-        var rec = { name: name.trim(), salt: salt, hash: hash, createdAt: Date.now() };
+        var rec = { name: name.trim(), salt: salt, hash: hash, createdAt: Date.now(), currentUnameKey: uid };
         await window.authStorage.set('acct:' + uid, JSON.stringify(rec), true);
+        await window.authStorage.set('uname:' + uid, uid, true);
         loginSession(uid, rec.name);
       }catch(err){
         showAuthError('Gagal terhubung ke server. Cek koneksi internet, terus coba lagi ya.');
@@ -5110,6 +5609,279 @@
       var greet = document.getElementById('userGreeting');
       if(greet) greet.textContent = currentUser ? ('halo, ' + currentUser.name + '! 👋') : '';
       showMenuUI();
+      loadAvatarInto('avatarImg', 'avatarPlaceholder');
+      loadPairedAvatars();
+    }
+
+    /* ---------- settings: avatar ---------- */
+    async function loadAvatarInto(imgId, placeholderId){
+      if(!currentUser) return;
+      var img = document.getElementById(imgId);
+      var placeholder = document.getElementById(placeholderId);
+      if(!img) return;
+      try{
+        var res = await window.authStorage.get('acct-photo:' + currentUser.uid, true);
+        if(res && res.value){
+          img.src = res.value;
+          img.style.display = 'block';
+          if(placeholder) placeholder.style.display = 'none';
+          return;
+        }
+      }catch(e){}
+      img.style.display = 'none';
+      img.removeAttribute('src');
+      if(placeholder) placeholder.style.display = 'block';
+    }
+
+    /* ---------- paired avatars: nampilin foto berdua kalau wishlist udah gabungan ---------- */
+    async function getPhotoUrl(uid){
+      try{
+        var res = await window.authStorage.get('acct-photo:' + uid, true);
+        return (res && res.value) ? res.value : '';
+      }catch(e){ return ''; }
+    }
+
+    function setPairedAvatarImg(imgId, phId, url){
+      var img = document.getElementById(imgId);
+      var ph = document.getElementById(phId);
+      if(!img) return;
+      if(url){
+        img.src = url;
+        img.style.display = 'block';
+        if(ph) ph.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        img.removeAttribute('src');
+        if(ph) ph.style.display = 'block';
+      }
+    }
+
+    async function loadPairedAvatars(){
+      var wrap = document.getElementById('pairedAvatars');
+      if(!wrap) return;
+      if(!currentUser){ wrap.style.display = 'none'; return; }
+      try{
+        var pairRes = await window.authStorage.get('wishlist-pair:' + currentUser.uid, false);
+        if(!pairRes || !pairRes.value){ wrap.style.display = 'none'; return; }
+        var pairInfo = JSON.parse(pairRes.value);
+        var partnerUid = pairInfo.partner;
+        if(!partnerUid){ wrap.style.display = 'none'; return; }
+        var partnerName = pairInfo.partnerName || partnerUid;
+
+        var meUrl = await getPhotoUrl(currentUser.uid);
+        var partnerUrl = await getPhotoUrl(partnerUid);
+
+        setPairedAvatarImg('pairedAvatarMeImg', 'pairedAvatarMePh', meUrl);
+        setPairedAvatarImg('pairedAvatarPartnerImg', 'pairedAvatarPartnerPh', partnerUrl);
+
+        var meNameEl = document.getElementById('pairedAvatarMeName');
+        var partnerNameEl = document.getElementById('pairedAvatarPartnerName');
+        if(meNameEl) meNameEl.textContent = currentUser.name;
+        if(partnerNameEl) partnerNameEl.textContent = partnerName;
+
+        wrap.style.display = 'flex';
+      }catch(e){
+        wrap.style.display = 'none';
+      }
+    }
+
+    function openPhotoLightbox(imgId){
+      var img = document.getElementById(imgId);
+      if(!img || img.style.display === 'none' || !img.getAttribute('src')) return;
+      var lb = document.getElementById('photoLightbox');
+      var lbImg = document.getElementById('lightboxImg');
+      lbImg.src = img.src;
+      lb.style.display = 'flex';
+    }
+
+    function closePhotoLightbox(e){
+      if(e && e.target && e.target.id !== 'photoLightbox' && !e.target.classList.contains('lightbox-close')) return;
+      document.getElementById('photoLightbox').style.display = 'none';
+    }
+
+    function resizeImageFile(file, maxSize, quality){
+      return new Promise(function(resolve, reject){
+        var reader = new FileReader();
+        reader.onerror = function(){ reject(new Error('gagal baca file')); };
+        reader.onload = function(){
+          var img = new Image();
+          img.onerror = function(){ reject(new Error('file bukan gambar yang valid')); };
+          img.onload = function(){
+            var w = img.width, h = img.height;
+            var scale = Math.min(1, maxSize / Math.max(w, h));
+            var cw = Math.max(1, Math.round(w * scale));
+            var ch = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cw, ch);
+            resolve(canvas.toDataURL('image/jpeg', quality || 0.8));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setSettingsMsg(elId, msg, isErr){
+      var el = document.getElementById(elId);
+      if(!el) return;
+      el.textContent = msg || '';
+      el.className = 'settings-msg' + (msg ? (isErr ? ' err' : ' ok') : '');
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var photoInput = document.getElementById('photoInput');
+      if(photoInput){
+        photoInput.addEventListener('change', async function(e){
+          var file = e.target.files && e.target.files[0];
+          if(!file || !currentUser) return;
+          setSettingsMsg('photoMsg', 'lagi ngunggah foto...', false);
+          try{
+            var dataUrl = await resizeImageFile(file, 320, 0.8);
+            await window.authStorage.set('acct-photo:' + currentUser.uid, dataUrl, true);
+            await loadAvatarInto('settingsAvatarImg', 'settingsAvatarPlaceholder');
+            await loadAvatarInto('avatarImg', 'avatarPlaceholder');
+            setSettingsMsg('photoMsg', 'foto profil berhasil diganti ✨', false);
+          }catch(err){
+            setSettingsMsg('photoMsg', 'gagal ganti foto, coba lagi ya.', true);
+          }
+          photoInput.value = '';
+        });
+      }
+
+      var removePhotoBtn = document.getElementById('removePhotoBtn');
+      if(removePhotoBtn){
+        removePhotoBtn.addEventListener('click', async function(){
+          if(!currentUser) return;
+          try{
+            if(window.authStorage.delete){
+              await window.authStorage.delete('acct-photo:' + currentUser.uid, true);
+            } else {
+              await window.authStorage.set('acct-photo:' + currentUser.uid, '', true);
+            }
+            await loadAvatarInto('settingsAvatarImg', 'settingsAvatarPlaceholder');
+            await loadAvatarInto('avatarImg', 'avatarPlaceholder');
+            setSettingsMsg('photoMsg', 'foto profil dihapus.', false);
+          }catch(err){
+            setSettingsMsg('photoMsg', 'gagal hapus foto, coba lagi ya.', true);
+          }
+        });
+      }
+
+      var renameForm = document.getElementById('renameForm');
+      if(renameForm){
+        renameForm.addEventListener('submit', async function(e){
+          e.preventDefault();
+          setSettingsMsg('renameMsg', '', false);
+          if(!currentUser) return;
+          var newNameRaw = document.getElementById('newUsernameInput').value;
+          var newName = newNameRaw.trim();
+          if(!newName){ setSettingsMsg('renameMsg', 'nama nggak boleh kosong.', true); return; }
+          var newKey = normalizeUid(newName);
+          setSettingsMsg('renameMsg', 'lagi nyimpen...', false);
+          try{
+            var acctRes = await window.authStorage.get('acct:' + currentUser.uid, true);
+            if(!acctRes || !acctRes.value){ setSettingsMsg('renameMsg', 'akun nggak ketemu.', true); return; }
+            var rec = JSON.parse(acctRes.value);
+            var oldKey = rec.currentUnameKey || currentUser.uid;
+
+            if(newKey !== oldKey){
+              var clash = await window.authStorage.get('uname:' + newKey, true);
+              if(clash && clash.value){ setSettingsMsg('renameMsg', 'nama itu udah dipakai akun lain.', true); return; }
+              await window.authStorage.set('uname:' + newKey, currentUser.uid, true);
+              if(window.authStorage.delete){
+                try{ await window.authStorage.delete('uname:' + oldKey, true); }catch(delErr){}
+              }
+              rec.currentUnameKey = newKey;
+            }
+            rec.name = newName;
+            await window.authStorage.set('acct:' + currentUser.uid, JSON.stringify(rec), true);
+
+            currentUser.name = newName;
+            try{ localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); }catch(storeErr){}
+            var greet = document.getElementById('userGreeting');
+            if(greet) greet.textContent = 'halo, ' + currentUser.name + '! 👋';
+            document.getElementById('newUsernameInput').value = '';
+            setSettingsMsg('renameMsg', 'username berhasil diganti ✨', false);
+          }catch(err){
+            setSettingsMsg('renameMsg', 'gagal ganti username, coba lagi ya.', true);
+          }
+        });
+      }
+
+      var passwordForm = document.getElementById('passwordForm');
+      if(passwordForm){
+        passwordForm.addEventListener('submit', async function(e){
+          e.preventDefault();
+          setSettingsMsg('passwordMsg', '', false);
+          if(!currentUser) return;
+          var curPassword = document.getElementById('curPasswordInput').value;
+          var newPassword = document.getElementById('newPasswordInput').value;
+          var newPassword2 = document.getElementById('newPassword2Input').value;
+          if(newPassword.length < 4){ setSettingsMsg('passwordMsg', 'password baru minimal 4 karakter.', true); return; }
+          if(newPassword !== newPassword2){ setSettingsMsg('passwordMsg', 'konfirmasi password baru nggak cocok.', true); return; }
+          setSettingsMsg('passwordMsg', 'lagi nyimpen...', false);
+          try{
+            var acctRes = await window.authStorage.get('acct:' + currentUser.uid, true);
+            if(!acctRes || !acctRes.value){ setSettingsMsg('passwordMsg', 'akun nggak ketemu.', true); return; }
+            var rec = JSON.parse(acctRes.value);
+            var curHash = await sha256Hex(rec.salt + curPassword);
+            if(curHash !== rec.hash){ setSettingsMsg('passwordMsg', 'password saat ini salah.', true); return; }
+            var newSalt = randomSalt();
+            var newHash = await sha256Hex(newSalt + newPassword);
+            rec.salt = newSalt;
+            rec.hash = newHash;
+            await window.authStorage.set('acct:' + currentUser.uid, JSON.stringify(rec), true);
+            passwordForm.reset();
+            setSettingsMsg('passwordMsg', 'password berhasil diganti ✨', false);
+          }catch(err){
+            setSettingsMsg('passwordMsg', 'gagal ganti password, coba lagi ya.', true);
+          }
+        });
+      }
+
+      var jadwalPublicToggle = document.getElementById('jadwalPublicToggle');
+      if(jadwalPublicToggle){
+        jadwalPublicToggle.addEventListener('click', async function(){
+          if(!currentUser) return;
+          var turningOn = !jadwalPublicToggle.classList.contains('on');
+          jadwalPublicToggle.classList.toggle('on', turningOn);
+          setSettingsMsg('jadwalPublicMsg', 'lagi nyimpen...', false);
+          try{
+            await window.authStorage.set('jadwal-public:' + currentUser.uid, turningOn ? 'true' : 'false', true);
+            setSettingsMsg('jadwalPublicMsg', turningOn ? 'pasangan sekarang bisa liat jadwalmu ✨' : 'jadwalmu udah privat lagi.', false);
+          }catch(err){
+            jadwalPublicToggle.classList.toggle('on', !turningOn);
+            setSettingsMsg('jadwalPublicMsg', 'gagal nyimpen, coba lagi ya.', true);
+          }
+        });
+      }
+    });
+
+    async function loadJadwalPublicToggle(){
+      var toggle = document.getElementById('jadwalPublicToggle');
+      if(!toggle || !currentUser) return;
+      try{
+        var res = await window.authStorage.get('jadwal-public:' + currentUser.uid, true);
+        toggle.classList.toggle('on', !!(res && res.value === 'true'));
+      }catch(e){
+        toggle.classList.remove('on');
+      }
+    }
+
+    function openSettings(){
+      document.getElementById('settingsModal').style.display = 'flex';
+      setSettingsMsg('photoMsg', '', false);
+      setSettingsMsg('renameMsg', '', false);
+      setSettingsMsg('passwordMsg', '', false);
+      setSettingsMsg('jadwalPublicMsg', '', false);
+      loadAvatarInto('settingsAvatarImg', 'settingsAvatarPlaceholder');
+      loadJadwalPublicToggle();
+    }
+
+    function closeSettings(){
+      document.getElementById('settingsModal').style.display = 'none';
     }
 
     /* ---------- inject current user id into each sub-app ---------- */
@@ -5144,6 +5916,7 @@
       });
       document.getElementById('page-menu').style.display = 'block';
       window.scrollTo(0,0);
+      loadPairedAvatars();
     }
 
     function openPage(name){
