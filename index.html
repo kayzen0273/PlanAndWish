@@ -5901,6 +5901,8 @@
       if(!iframe.dataset.loaded){
         if(name === 'photobox'){
           iframe.src = 'https://update-mocha-two.vercel.app/';
+        } else if(name === 'keuangan'){
+          iframe.src = 'https://keuangankuuu.vercel.app/';
         } else {
           var tpl = document.getElementById('tpl-' + name);
           iframe.srcdoc = injectUser(tpl.value);
